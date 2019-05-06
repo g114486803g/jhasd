@@ -35,6 +35,13 @@ yum makecache fast
 yum -y install docker-ce
 systemctl enable kubele docker 
 systemctl start docker 
+#以上系统设置结束
+-----------我是淫荡的分割线-----------------------
+2.导入k8s所需要的组件
+克隆一份pullx.sh脚本到导入k8s组件
+
+
+
 
 
 
