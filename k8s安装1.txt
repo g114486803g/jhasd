@@ -39,6 +39,109 @@ systemctl start docker
 -----------我是淫荡的分割线-----------------------
 2.导入k8s所需要的组件
 克隆一份pullx.sh脚本到导入k8s组件
+得到以下组件
+[root@test-ku ~]# docker images | grep k8s.gcr.io
+k8s.gcr.io/kube-proxy                               v1.14.1                   20a2d7035165        3 weeks ago         82.1MB
+k8s.gcr.io/kube-apiserver                           v1.14.1                   cfaa4ad74c37        3 weeks ago         210MB
+k8s.gcr.io/kube-scheduler                           v1.14.1                   8931473d5bdb        3 weeks ago         81.6MB
+k8s.gcr.io/kube-controller-manager                  v1.14.1                   efb3887b411d        3 weeks ago         158MB
+k8s.gcr.io/coredns                                  1.3.1                     eb516548c180        3 months ago        40.3MB
+k8s.gcr.io/etcd                                     3.3.10                    2c4adeb21b4f        5 months ago        258MB
+k8s.gcr.io/pause                                    3.1                       da86e6ba6ca1        16 months ago       742kB
+-----------------------------------------------------------
+3.开始初始化集群
+kubeadm init这个命令帮助你启动跟Master相关的组件APIServer、Etcd、Scheduler、Controller-Manager等
+kubeadm init的参数：
+--apiserver-advertise-address string
+API Server将要广播的监听地址。如指定为 `0.0.0.0` 将使用缺省的网卡地址。
+--apiserver-bind-port int32     缺省值: 6443
+API Server绑定的端口
+--apiserver-cert-extra-sans stringSlice
+可选的额外提供的证书主题别名（SANs）用于指定API Server的服务器证书。可以是IP地址也可以是DNS名称。
+--cert-dir string     缺省值: "/etc/kubernetes/pki"
+证书的存储路径。
+--config string
+kubeadm配置文件的路径。警告：配置文件的功能是实验性的。
+--cri-socket string     缺省值: "/var/run/dockershim.sock"
+指明要连接的CRI socket文件
+--dry-run
+不会应用任何改变；只会输出将要执行的操作。
+--feature-gates string
+键值对的集合，用来控制各种功能的开关。可选项有:
+Auditing=true|false (当前为ALPHA状态 - 缺省值=false)
+CoreDNS=true|false (缺省值=true)
+DynamicKubeletConfig=true|false (当前为BETA状态 - 缺省值=false)
+-h, --help
+获取init命令的帮助信息
+--ignore-preflight-errors stringSlice
+忽视检查项错误列表，列表中的每一个检查项如发生错误将被展示输出为警告，而非错误。 例如: 'IsPrivilegedUser,Swap'. 如填写为 'all' 则将忽视所有的检查项错误。
+--kubernetes-version string     缺省值: "stable-1"
+为control plane选择一个特定的Kubernetes版本。
+--node-name string
+指定节点的名称。
+--pod-network-cidr string
+指明pod网络可以使用的IP地址段。 如果设置了这个参数，control plane将会为每一个节点自动分配CIDRs。
+--service-cidr string     缺省值: "10.96.0.0/12"
+为service的虚拟IP地址另外指定IP地址段
+--service-dns-domain string     缺省值: "cluster.local"
+为services另外指定域名, 例如： "myorg.internal".
+--skip-token-print
+不打印出由 `kubeadm init` 命令生成的默认令牌。
+--token string
+这个令牌用于建立主从节点间的双向受信链接。格式为 [a-z0-9]{6}\.[a-z0-9]{16} - 示例： abcdef.0123456789abcdef
+--token-ttl duration     缺省值: 24h0m0s
+令牌被自动删除前的可用时长 (示例： 1s, 2m, 3h). 如果设置为 '0', 令牌将永不过期。
+
+我的最新版v1.14.1
+[root@test-ku ~]# kubectl version
+Client Version: version.Info{Major:"1", Minor:"14", GitVersion:"v1.14.1", GitCommit:"b7394102d6ef778017f2ca4046abbaa23b88c290", GitTreeState:"clean", BuildDate:"2019-04-08T17:11:31Z", GoVersion:"go1.12.1", Compiler:"gc", Platform:"linux/amd64"}
+The connection to the server localhost:8080 was refused - did you specify the right host or port?
+[root@test-ku ~]# date
+2019年 05月 06日 星期一 18:08:26 CST
+
+
+
+root@test-ku ~]# kubeadm init --kubernetes-version=v1.14.1 --pod-network-cidr=10.244.0.0/16
+[init] Using Kubernetes version: v1.14.1
+[preflight] Running pre-flight checks
+	[WARNING Firewalld]: firewalld is active, please ensure ports [6443 10250] are open or your cluster may not function correctly
+	[WARNING IsDockerSystemdCheck]: detected "cgroupfs" as the Docker cgroup driver. The recommended driver is "systemd". Please follow the guide at https://kubernetes.io/docs/setup/cri/
+	[WARNING Hostname]: hostname "test-ku" could not be reached
+	[WARNING Hostname]: hostname "test-ku": lookup test-ku on 114.114.114.114:53: no such host
+
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+得到这串TOKEN就初始化成功了
+kubeadm join 172.16.8.195:6443 --token wajg6j.q05rfozm5yhbyxob \
+    --discovery-token-ca-cert-hash sha256:cb6414246fc73cc80513db0b7a301c52d17bdd0888a8f58fc28bc7d45ed3cfeb 
+    
+创建它提示的
+[root@test-ku ~]# mkdir -p $HOME/.kube
+[root@test-ku ~]# cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+[root@test-ku ~]# 
+
+必须得到以下
+[root@test-ku ~]# kubectl get cs
+NAME                 STATUS    MESSAGE             ERROR
+controller-manager   Healthy   ok                  
+scheduler            Healthy   ok                  
+etcd-0               Healthy   {"health":"true"}   
+---------------------------------------
+
+安装flannel网络（可以直接安装）
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 
 
 
