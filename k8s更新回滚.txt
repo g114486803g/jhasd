@@ -1,5 +1,7 @@
 nginx1.16:v0011
 
+使用 rollo-bbc.yml
+
 kubectl apply -f rollo-bbc.yml 
 
 
