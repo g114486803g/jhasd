@@ -1,5 +1,7 @@
 nginx1.16:v0011
 
+kubectl apply -f rollo-bbc.yml 
+
 
 暴露端口
 kubectl expose deployment bbc-rollo --type=NodePort
