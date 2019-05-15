@@ -1,0 +1,44 @@
+
+命令行更新
+[root@master193 ~]#  kubectl set image deployment/bbc-rollo bbc=centos76_nginx1.16:v005 && kubectl rollout pause deployment bbc-rollo 
+deployment.extensions/bbc-rollo image updated
+deployment.extensions/bbc-rollo paused
+
+
+查看更新中。。。
+[root@master193 ~]# kubectl rollout status deployment bbc-rollo 
+Waiting for deployment "bbc-rollo" rollout to finish: 1 out of 2 new replicas have been updated...
+
+更新中的状态
+[root@master193 ~]# kubectl get rs -o wide
+NAME                   DESIRED   CURRENT   READY   AGE    CONTAINERS   IMAGES                    SELECTOR
+bbc-rollo-676cc9fc64   2         2         2       111m   bbc          nginx1.16:v0011           app=bbc,pod-template-hash=676cc9fc64,release=canary
+bbc-rollo-68dfffdf69   1         1         1       117m   bbc          centos76_nginx1.16:v005   app=bbc,pod-template-hash=68dfffdf69,release=canary
+
+
+
+使用resume 继续更新..
+[root@master193 ~]# kubectl rollout resume deployment bbc-rollo 
+deployment.extensions/bbc-rollo resumed
+
+
+
+
+监控到删一个创建一个
+[root@master193 ~]# kubectl get pods -l app=bbc -w
+NAME                         READY   STATUS    RESTARTS   AGE
+bbc-rollo-676cc9fc64-cm97d   1/1     Running   0          83m
+bbc-rollo-676cc9fc64-mz4sg   1/1     Running   0          83m
+bbc-rollo-68dfffdf69-f6jnf   1/1     Running   0          3m12s
+bbc-rollo-676cc9fc64-mz4sg   1/1     Terminating   0          83m
+bbc-rollo-68dfffdf69-grmkz   0/1     Pending       0          0s
+bbc-rollo-68dfffdf69-grmkz   0/1     Pending       0          0s
+bbc-rollo-68dfffdf69-grmkz   0/1     ContainerCreating   0          0s
+bbc-rollo-676cc9fc64-mz4sg   0/1     Terminating         0          83m
+bbc-rollo-68dfffdf69-grmkz   1/1     Running             0          2s
+
+更新完了全是0000
+[root@master193 ~]#  kubectl get rs -o wide
+NAME                   DESIRED   CURRENT   READY   AGE    CONTAINERS   IMAGES                    SELECTOR
+bbc-rollo-676cc9fc64   0         0         0       115m   bbc          nginx1.16:v0011           app=bbc,pod-template-hash=676cc9fc64,release=canary
+bbc-rollo-68dfffdf69   2         2         2       121m   bbc          centos76_nginx1.16:v005   app=bbc,pod-template-hash=68dfffdf69,release=canary
