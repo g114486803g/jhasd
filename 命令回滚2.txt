@@ -1,5 +1,5 @@
 
-命令行更新
+命令行更新要记得执行&& 后面那条命令
 [root@master193 ~]#  kubectl set image deployment/bbc-rollo bbc=centos76_nginx1.16:v005 && kubectl rollout pause deployment bbc-rollo 
 deployment.extensions/bbc-rollo image updated
 deployment.extensions/bbc-rollo paused
