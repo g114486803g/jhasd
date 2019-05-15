@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bbc-rollo
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bbc
+      release: canary  
+  template:	
+    metadata:
+      labels:
+        app: bbc
+        release: canary
+    spec:
+      containers:
+      - name: bbc
+        image:  docker.io/nginx:latest
+        imagePullPolicy: IfNotPresent  
+        ports:
+        - name: http
+          containerPort: 80
+

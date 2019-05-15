@@ -1,0 +1,77 @@
+nginx1.16:v0011
+
+
+暴露端口
+kubectl expose deployment bbc-rollo --type=NodePort
+
+[root@master193 yesy]# kubectl get svc
+NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+bbc-rollo    NodePort    10.101.77.94     <none>        80:30945/TCP   9s
+kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP        10d
+myapp        ClusterIP   10.106.224.193   <none>        80/TCP         8d
+myjb         ClusterIP   10.99.212.182    <none>        80/TCP         8d
+
+
+
+[root@master193 yesy]# kubectl get rs -o wide
+NAME                   DESIRED   CURRENT   READY   AGE     CONTAINERS   IMAGES                    SELECTOR
+bbc-rollo-676cc9fc64   3         3         3       2m24s   bbc          nginx1.16:v0011           app=bbc,pod-template-hash=676cc9fc64,release=canary
+bbc-rollo-68dfffdf69   0         0         0       8m45s   bbc          centos76_nginx1.16:v005   app=bbc,pod-template-hash=68dfffdf69,release=canary
+myjb-684bf6df78        2         2         2       8d      myjb         nginx1.16:v0011           pod-template-hash=684bf6df78,run=myjb
+
+
+查看共2个版本了
+[root@master193 yesy]# kubectl rollout history deployment bbc-rollo 
+deployment.extensions/bbc-rollo 
+REVISION  CHANGE-CAUSE
+1         <none>
+2         <none>
+
+实时跟踪更新
+[root@master193 yesy]# kubectl get pods -l app=bbc -w
+NAME                         READY   STATUS    RESTARTS   AGE
+bbc-rollo-676cc9fc64-cm97d   1/1     Running   0          27m
+bbc-rollo-676cc9fc64-mz4sg   1/1     Running   0          27m
+
+查看
+[root@master193 yesy]# kubectl describe deployment bbc-rollo 
+Name:                   bbc-rollo
+Namespace:              default
+CreationTimestamp:      Wed, 15 May 2019 21:59:07 +0800
+Labels:                 <none>
+Annotations:            deployment.kubernetes.io/revision: 2
+                        kubectl.kubernetes.io/last-applied-configuration:
+                          {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"name":"bbc-rollo","namespace":"default"},"spec":{"replicas":3,"s...
+Selector:               app=bbc,release=canary
+Replicas:               3 desired | 3 updated | 3 total | 3 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+
+跟踪
+root@master193 yesy]# kubectl rollout status deployment bbc-rollo 
+deployment "bbc-rollo" successfully rolled out
+
+
+历史版本在最下面
+[root@master193 yesy]# kubectl get rs -o wide
+NAME                   DESIRED   CURRENT   READY   AGE   CONTAINERS   IMAGES                    SELECTOR
+bbc-rollo-676cc9fc64   3         3         3       22m   bbc          nginx1.16:v0011           app=bbc,pod-template-hash=676cc9fc64,release=canary
+bbc-rollo-68dfffdf69   0         0         0       29m   bbc          centos76_nginx1.16:v005   app=bbc,pod-template-hash=68dfffdf69,release=canary
+
+（注意1是最初的版本）
+[root@master193 yesy]# kubectl rollout history deployment bbc-rollo 
+deployment.extensions/bbc-rollo 
+REVISION  CHANGE-CAUSE
+1         <none>
+2         <none>
+
+
+回滚到原来的第一版
+[root@master193 yesy]# kubectl rollout undo deployment bbc-rollo --to-revision=1
+deployment.extensions/bbc-rollo rolled back
+[root@master193 yesy]# kubectl get rs -o wide
+NAME                   DESIRED   CURRENT   READY   AGE   CONTAINERS   IMAGES                    SELECTOR
+bbc-rollo-676cc9fc64   0         0         0       27m   bbc          nginx1.16:v0011           app=bbc,pod-template-hash=676cc9fc64,release=canary
+bbc-rollo-68dfffdf69   3         3         3       33m   bbc          centos76_nginx1.16:v005   app=bbc,pod-template-hash=68dfffdf69,release=canary
+
+
