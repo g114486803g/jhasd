@@ -1,0 +1,47 @@
+wget https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended/kubernetes-dashboard.yaml
+
+
+[root@docker200 k8s]# kubectl apply -f kubernetes-dashboard.yaml 
+secret/kubernetes-dashboard-certs created
+secret/kubernetes-dashboard-csrf created
+serviceaccount/kubernetes-dashboard created
+role.rbac.authorization.k8s.io/kubernetes-dashboard-minimal created
+rolebinding.rbac.authorization.k8s.io/kubernetes-dashboard-minimal created
+deployment.apps/kubernetes-dashboard created
+service/kubernetes-dashboard created
+
+
+[root@docker200 k8s]# kubectl get svc
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP        115m
+nginxx       NodePort    10.108.19.240   <none>        80:31421/TCP   14m
+
+
+[root@docker200 k8s]# kubectl get svc -n kube-system 
+NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                  AGE
+kube-dns               ClusterIP   10.96.0.10      <none>        53/UDP,53/TCP,9153/TCP   116m
+kubernetes-dashboard   ClusterIP   10.106.109.81   <none>        443/TCP                  28s
+
+暴露端口
+[root@docker200 ~]# kubectl patch svc kubernetes-dashboard -p '{"spec":{"type":"NodePort"}}' -n kube-system 
+service/kubernetes-dashboard patched
+[root@docker200 ~]# kubectl get svc -n kube-system 
+NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                  AGE
+kube-dns               ClusterIP   10.96.0.10      <none>        53/UDP,53/TCP,9153/TCP   119m
+kubernetes-dashboard   NodePort    10.106.109.81   <none>        443:31558/TCP            4m12s
+
+
+还在等待
+root@docker200 ~]# kubectl get pods -n kube-system 
+NAME                                    READY   STATUS             RESTARTS   AGE
+coredns-8686dcc4fd-25rvv                1/1     Running            0          126m
+coredns-8686dcc4fd-r4r6s                1/1     Running            0          126m
+etcd-docker200                          1/1     Running            0          125m
+kube-apiserver-docker200                1/1     Running            0          125m
+kube-controller-manager-docker200       1/1     Running            0          125m
+kube-flannel-ds-amd64-4bxgr             1/1     Running            0          124m
+kube-flannel-ds-amd64-g2mbv             1/1     Running            0          47m
+kube-proxy-4fzkh                        1/1     Running            0          126m
+kube-proxy-dbm9r                        1/1     Running            0          47m
+kube-scheduler-docker200                1/1     Running            0          125m
+kubernetes-dashboard-5f7b999d65-9nlch   0/1     ImagePullBackOff   0          11m
