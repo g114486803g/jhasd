@@ -98,3 +98,51 @@ EOF
 
 systemctl daemon-reload
 systemctl restart docker
+
+加入集群
+kubeadm join 192.168.31.200:6443 --token bud6qy.son9jihas6c793az \
+    --discovery-token-ca-cert-hash sha256:f8bcc3b074a9a5ae40a6093f00064db5de22bab1782e6511f5226619a270c005 
+
+-----------------以上node节点安装完成------------------------------------------------------
+在master节点测试
+[root@docker200 ~]# kubectl run  nginxx --image=nginx1.16:v0011 --replicas=2
+kubectl run --generator=deployment/apps.v1 is DEPRECATED and will be removed in a future version. Use kubectl run --generator=run-pod/v1 or kubectl create instead.
+deployment.apps/nginxx created
+[root@docker200 ~]# kubectl get pods
+NAME                     READY   STATUS    RESTARTS   AGE
+nginxx-c47996758-hxzlj   1/1     Running   0          11s
+nginxx-c47996758-rnwr9   1/1     Running   0          11s
+
+
+[root@docker200 ~]# kubectl get pods
+NAME                     READY   STATUS    RESTARTS   AGE
+nginxx-c47996758-hxzlj   1/1     Running   0          11s
+nginxx-c47996758-rnwr9   1/1     Running   0          11s
+
+
+[root@docker200 ~]# kubectl get pod -o wide 
+NAME                     READY   STATUS    RESTARTS   AGE   IP           NODE      NOMINATED NODE   READINESS GATES
+nginxx-c47996758-hxzlj   1/1     Running   0          31s   10.244.1.4   node202   <none>           <none>
+nginxx-c47996758-rnwr9   1/1     Running   0          31s   10.244.1.5   node202   <none>           <none>
+
+暴露端口
+[root@docker200 ~]# kubectl expose deployment nginxx --port=80 --type=NodePort
+service/nginxx exposed
+
+
+[root@docker200 ~]# kubectl get po,svc
+NAME                         READY   STATUS    RESTARTS   AGE
+pod/nginxx-c47996758-hxzlj   1/1     Running   0          102s
+pod/nginxx-c47996758-rnwr9   1/1     Running   0          102s
+
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+service/kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP        101m
+service/nginxx       NodePort    10.108.19.240   <none>        80:31421/TCP   14s
+
+访问正常
+[root@docker200 ~]# curl 192.168.31.202:31421
+jbjbjb form 4143b7a8cf39
+ 
+ 结束
+
+
