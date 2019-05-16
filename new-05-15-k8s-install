@@ -32,10 +32,12 @@ sysctl -p /etc/sysctl.d/k8s.conf
 
 yum install -y kubelet kubeadm kubectl
 yum makecache fast
-yum -y install docker-ce
+yum install docker-ce docker-ce-cli containerd.io
+
 systemctl enable kubele docker 
 systemctl start docker 
 
+（master和node安装一样的包）
 ---------------------------------------------
 
 初始化集群
