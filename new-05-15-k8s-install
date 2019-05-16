@@ -1,0 +1,100 @@
+系统配置
+
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
+       https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+EOF
+
+#docker
+wget https://download.docker.com/linux/centos/docker-ce.repo
+
+# 关闭selinux
+setenforce 0
+sed -i 's/^SELINUX=enforcing$/SELINUX=disabled/' /etc/selinux/config
+
+#关闭Swap
+swapoff -a
+
+#路由设置看需要可以不设置
+cat <<EOF >  /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+vm.swappiness=0
+EOF
+sysctl --system
+sysctl -p /etc/sysctl.d/k8s.conf
+
+yum install -y kubelet kubeadm kubectl
+yum makecache fast
+yum -y install docker-ce
+systemctl enable kubele docker 
+systemctl start docker 
+
+---------------------------------------------
+
+初始化集群
+
+kubeadm init --image-repository registry.aliyuncs.com/google_containers  --kubernetes-version=v1.14.1 --pod-network-cidr=10.244.0.0/16
+
+
+
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 192.168.31.200:6443 --token bud6qy.son9jihas6c793az \
+    --discovery-token-ca-cert-hash sha256:f8bcc3b074a9a5ae40a6093f00064db5de22bab1782e6511f5226619a270c005 
+
+
+
+[root@docker200 ~]#  mkdir -p $HOME/.kube
+[root@docker200 ~]#  cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+[root@docker200 ~]# chown $(id -u):$(id -g) $HOME/.kube/config
+[root@docker200 ~]# kubectl get node
+NAME        STATUS     ROLES    AGE   VERSION
+docker200   NotReady   master   57s   v1.14.1
+
+
+安装flannel网卡
+ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+ 
+ 得到Ready主节点搭建完成
+[root@docker200 ~]# kubectl get node
+NAME        STATUS   ROLES    AGE     VERSION
+docker200   Ready    master   3m10s   v1.14.1
+
+
+--------------------------------------
+Node节点安装
+yum install docker-ce docker-ce-cli containerd.io
+yum install  kubelet kubeadm kubectl
+
+systemctl enable kubelet docker 
+systemctl start docker  kubelet
+
+我的阿里云加速器
+tee /etc/docker/daemon.json <<-'EOF'
+{
+  "registry-mirrors": ["https://0k0953tv.mirror.aliyuncs.com"]
+}
+EOF
+
+
+systemctl daemon-reload
+systemctl restart docker
