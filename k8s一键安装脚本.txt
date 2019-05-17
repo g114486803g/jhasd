@@ -1,3 +1,4 @@
+系统要求centos7.6生效
 1,master节点选择 master.sh 脚本。
 
 下载master.sh
