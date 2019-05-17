@@ -45,3 +45,16 @@ kube-proxy-4fzkh                        1/1     Running            0          12
 kube-proxy-dbm9r                        1/1     Running            0          47m
 kube-scheduler-docker200                1/1     Running            0          125m
 kubernetes-dashboard-5f7b999d65-9nlch   0/1     ImagePullBackOff   0          11m
+(如果官方镜像pull不下来。像我这样的话，可以使用我的上传的阿里云官方镜像)
+
+获取镜像
+docker pull registry.cn-shenzhen.aliyuncs.com/jbjb/k8s-images:kubernetes-dashboard-amd64
+
+打个tag,跟yaml模版一致
+docker tag registry.cn-shenzhen.aliyuncs.com/jbjb/k8s-images:kubernetes-dashboard-amd64  k8s.gcr.io/kubernetes-dashboard-amd64:v1.10.1
+
+然后在直接
+
+kubectl apply -f kubernetes-dashboard.yaml 
+
+
