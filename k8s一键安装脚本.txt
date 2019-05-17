@@ -1,0 +1,9 @@
+1,master节点选择 master.sh 脚本。
+
+下载master.sh
+wget https://github.com/g114486803g/k8s-/blob/master/master.sh
+
+2.node节点
+
+下载node1.sh
+https://github.com/g114486803g/k8s-/blob/master/node1.sh
