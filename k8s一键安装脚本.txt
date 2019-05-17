@@ -2,8 +2,17 @@
 
 下载master.sh
 wget https://github.com/g114486803g/k8s-/blob/master/master.sh
+chmod +x master.sh
+
+运行脚本
+./master.sh
 
 2.node节点
-
 下载node1.sh
 https://github.com/g114486803g/k8s-/blob/master/node1.sh
+
+
+chmod +x node1.sh
+
+运行脚本
+./node1.sh
