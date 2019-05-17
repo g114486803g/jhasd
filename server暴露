@@ -1,0 +1,52 @@
+[root@docker200 pki]# kubectl get svc
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP        16h
+nginxx       NodePort    10.108.19.240   <none>        80:31421/TCP   14h
+
+[root@docker200 pki]# kubectl delete svc nginxx 
+service "nginxx" deleted
+
+
+[root@docker200 pki]# kubectl get svc
+NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   16h
+[root@docker200 pki]# 
+
+
+[root@docker200 svc]# kubectl apply -f nginx-port.yaml 
+service/nginxx created
+[root@docker200 svc]# kubectl get svc
+NAME         TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)        AGE
+kubernetes   ClusterIP   10.96.0.1     <none>        443/TCP        16h
+nginxx       NodePort    10.99.99.99   <none>        80:30099/TCP   7s
+
+
+kubectl expose deployment nginxx2 --port=80 --type=NodePort
+
+
+kubectl run nginxx2 --image=nginx1.16:v0011 --replicas=3
+
+echo $(hostname) > /usr/local/nginx/html/index.html
+
+
+
+关闭分流
+kubectl patch svc nginxx2 -p '{"spec":{"sessionAffinity":"ClusterIP"}}'
+
+
+
+[root@docker200 svc]# kubectl describe svc nginxx2 
+Name:                     nginxx2
+Namespace:                default
+Labels:                   run=nginxx2
+Annotations:              <none>
+Selector:                 run=nginxx2
+Type:                     NodePort
+IP:                       10.107.148.115
+Port:                     <unset>  80/TCP
+TargetPort:               80/TCP
+NodePort:                 <unset>  32717/TCP
+Endpoints:                10.244.1.10:80,10.244.1.11:80,10.244.1.12:80
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
