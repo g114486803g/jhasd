@@ -57,4 +57,10 @@ docker tag registry.cn-shenzhen.aliyuncs.com/jbjb/k8s-images:kubernetes-dashboar
 
 kubectl apply -f kubernetes-dashboard.yaml 
 
+最后使用以下脚本生产令牌登录
+https://github.com/g114486803g/k8s-/blob/master/dashboard-admin.sh
+chmod +x dashboard-admin.sh
+./dashboard-admin.sh
+
+
 
