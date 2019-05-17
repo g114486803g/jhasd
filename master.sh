@@ -1,6 +1,9 @@
 #!/bin/bash
 
 #yum源配置
+systemctl stop firewalld.service 
+systemctl disable firewalld.service
+
 cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
