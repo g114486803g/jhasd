@@ -1,0 +1,15 @@
+cd / && du -hsx * | sort -rh | head -5
+
+查找出当前目录中占用空间最大的5个文件或目录
+
+echo $(hostname) > /usr/local/nginx/html/index.html 
+
+
+
+kubectl expose deployment bbc-svc --port=80 --type=NodePort
+
+
+kubectl expose deployment  bbc-svc --port=80 --type=LoadBalancer
+
+
+https://github.com/docker-library/redis/blob/master/5.0/alpine/Dockerfile
