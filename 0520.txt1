@@ -13,3 +13,13 @@ kubectl expose deployment  bbc-svc --port=80 --type=LoadBalancer
 
 
 https://github.com/docker-library/redis/blob/master/5.0/alpine/Dockerfile
+
+默认暴露端口ip
+[root@master193 ~]# kubectl expose pod redis-master-8jzxr
+service/redis-master-8jzxr exposed
+[root@master193 ~]# kubectl get svc
+NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+bbc-rollo            NodePort    10.101.77.94     <none>        80:30945/TCP   4d21h
+bbc-svc              NodePort    10.106.186.226   <none>        80:30397/TCP   14m
+kubernetes           ClusterIP   10.96.0.1        <none>        443/TCP        15d
+redis-master-8jzxr   ClusterIP   10.109.224.50    <none>        6379/TCP       6s
