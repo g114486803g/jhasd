@@ -1,0 +1,45 @@
+docker build -t tomcat8.5.41:v003 .
+
+docker image inspect tomcat8.5.41:v002
+
+
+--rm表示关闭容器时同时删除容器
+docker run -d -it --name tomcat123 --rm -p 8080:8080 tomcat8.5.41:v006 /bin/bash
+
+
+--e指定时区TZ='Asia/Shanghai'
+
+docker run -d -it --name tomcat123  -e TZ='Asia/Shanghai' --rm -p 8080:8080 tomcat8.5.41:v002 /bin/bash  
+
+
+docker image inspect tomcat8.5.41:v003 .
+
+
+
+JAVA_HOME=/usr/java/jdk1.8.0_201
+PATH=${JAVA_HOME}/bin:$PATH
+
+
+
+ kubectl run  tomcat --image=tomcat8.5.41:v002 --replicas=2
+ 
+ 
+ kubectl expose deployment tomcat --port=8080 --type=NodePort
+ 
+ 
+ 
+ docker run -d -it --name tomcat123 --rm -p 8080:8080 tomcat8.5.41:v007 /bin/bash
+
+
+ docker run -d -it --name tomcat123 --rm -p 8080:8080 tomcat8.5.41:v00 /bin/bash
+
+
+
+docker build -t new/tomcat8.5.41:v000 .
+
+
+ docker run -d -it --name tomcat123 --rm -p 8080:8080 xxx7/tomcat8.5.41:v004bin/bash
+
+
+
+docker build -t xxx7/tomcat8.5.41:v000 .
