@@ -1,0 +1,5 @@
+基础镜像
+docker pull registry.cn-shenzhen.aliyuncs.com/jbjb/jbjb-centos:99OSv01
+
+带jdk的镜像
+docker pull  registry.cn-shenzhen.aliyuncs.com/jbjb/jbjb-centos:os7x-jdk1.8.0_201
