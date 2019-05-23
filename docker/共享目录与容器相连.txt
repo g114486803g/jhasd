@@ -1,0 +1,29 @@
+docker run -d -it  --name tomcat123 --rm -p 8080:8080 os7x/jdk1.8.0_201:v02 /bin/bash
+
+
+
+find /coco/2x/ -name "*.tar.gz" -exec mv {} /new/coco \;
+
+
+
+启动一个cct1容器，然后连接到tomcat123容器再起个别名webs
+docker run  -it -d --name cct1 --link=tomcat123:webs jdk8:v01 /bin/bash
+
+
+
+[root@8 ~]# docker ps -a
+CONTAINER ID        IMAGE                    COMMAND                  CREATED             STATUS              PORTS                    NAMES
+a1a951c52a51        jdk8:v01                 "/bin/bash"              8 seconds ago       Up 7 seconds                                 cct1
+0c35ef9324e6        xxx7/tomcat8.5.41:v088   "./bin/catalina.sh r…"   2 hours ago         Up 2 hours          0.0.0.0:8080->8080/tcp   tomcat123
+
+
+ping 别名webs是通的
+[root@8 ~]# docker attach cct1 
+[root@a1a951c52a51 /]# ping webs
+PING webs (172.17.0.2) 56(84) bytes of data.
+64 bytes from webs (172.17.0.2): icmp_seq=1 ttl=64 time=0.138 ms
+64 bytes from webs (172.17.0.2): icmp_seq=2 ttl=64 time=0.116 ms
+
+宿主机的/test目录挂载到容器的/data/soft目录，可通过以下方式指定 (容器内会自动创建/data/soft的目录）
+ docker run -d -it -v /test:/data/soft --name tomcat123 --rm -p 8080:8080 77centos:v00 /bin/bash
+
