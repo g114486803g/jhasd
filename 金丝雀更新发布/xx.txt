@@ -1,0 +1,29 @@
+[root@ku209 ~]# kubectl get pods -l app=dog-jar -w
+NAME                            READY   STATUS    RESTARTS   AGE
+dog-jar-test-69f5554b94-g7hc7   1/1     Running   0          14m
+dog-jar-test-69f5554b94-mqbjt   1/1     Running   0          14m
+dog-jar-test-6f58f96577-q7z2r   0/1     Pending   0          0s
+dog-jar-test-6f58f96577-q7z2r   0/1     Pending   0          0s
+dog-jar-test-6f58f96577-q7z2r   0/1     ContainerCreating   0          0s
+dog-jar-test-6f58f96577-q7z2r   1/1     Running             0          3s
+dog-jar-test-6f58f96577-6jx6c   0/1     Pending             0          0s
+dog-jar-test-69f5554b94-mqbjt   1/1     Terminating         0          14m
+dog-jar-test-6f58f96577-6jx6c   0/1     Pending             0          0s
+dog-jar-test-6f58f96577-6jx6c   0/1     ContainerCreating   0          0s
+dog-jar-test-69f5554b94-mqbjt   0/1     Terminating         0          14m
+dog-jar-test-69f5554b94-mqbjt   0/1     Terminating         0          14m
+dog-jar-test-6f58f96577-6jx6c   1/1     Running             0          3s
+dog-jar-test-69f5554b94-g7hc7   1/1     Terminating         0          14m
+dog-jar-test-69f5554b94-g7hc7   0/1     Terminating         0          14m
+dog-jar-test-69f5554b94-mqbjt   0/1     Terminating         0          14m
+dog-jar-test-69f5554b94-mqbjt   0/1     Terminating         0          14m
+dog-jar-test-69f5554b94-g7hc7   0/1     Terminating         0          14m
+dog-jar-test-69f5554b94-g7hc7   0/1     Terminating         0          14m
+
+
+
+[root@ku209 ~]# kubectl patch --help
+
+
+
+ kubectl patch pod valid-pod -p '{"spec":{"containers":[{"name":"kubernetes-serve-hostname","image":"new image"}]}}'
