@@ -27,3 +27,27 @@ dog-jar-test-69f5554b94-g7hc7   0/1     Terminating         0          14m
 
 
  kubectl patch pod valid-pod -p '{"spec":{"containers":[{"name":"kubernetes-serve-hostname","image":"new image"}]}}'
+
+
+kubectl expose deployment dog-jar-test --port=8080 --type=NodePort
+
+
+[root@ku209 ~]# kubectl get rs -o wide
+NAME                      DESIRED   CURRENT   READY   AGE    CONTAINERS   IMAGES                SELECTOR
+dog-jar-test-69f5554b94   0         0         0       162m   dog-jar      alpine/jar-dog:v01    app=dog-jar,pod-template-hash=69f5554b94,release=canary
+dog-jar-test-7f8bcc4765   2         2         2       157m   dog-jar      alpine/tomcat85:v01   app=dog-jar,pod-template-hash=7f8bcc4765,release=canary
+
+
+
+[root@ku209 ~]#  kubectl rollout history deployment dog-jar-test 
+deployment.extensions/dog-jar-test 
+REVISION  CHANGE-CAUSE
+5         <none>
+6         <none>
+
+
+
+
+
+
+kubectl set image deployment/bbc-rollo bbc=centos76_nginx1.16:v005 && kubectl rollout pause deployment bbc-rollo 
