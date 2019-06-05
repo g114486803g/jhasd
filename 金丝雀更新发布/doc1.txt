@@ -1,0 +1,114 @@
+[root@ku209 ~]# kubectl apply -f dog-jar.yaml 
+deployment.apps/dog-jar-test created
+[root@ku209 ~]# kubectl get deployments.
+NAME           READY   UP-TO-DATE   AVAILABLE   AGE
+dog-jar-test   2/2     2            2           6s
+
+[root@ku209 ~]# kubectl get deployments
+NAME           READY   UP-TO-DATE   AVAILABLE   AGE
+dog-jar-test   2/2     2            2           8s
+
+查看副本
+[root@ku209 ~]# kubectl get rs
+NAME                      DESIRED   CURRENT   READY   AGE
+dog-jar-test-69f5554b94   2         2         2       16s
+
+
+查看是否支持更新（RollingUpdate）
+
+[root@ku209 ~]# kubectl describe deployments dog-jar-test 
+Name:                   dog-jar-test
+Namespace:              default
+CreationTimestamp:      Wed, 05 Jun 2019 21:18:03 +0800
+Labels:                 <none>
+Annotations:            deployment.kubernetes.io/revision: 1
+                        kubectl.kubernetes.io/last-applied-configuration:
+                          {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"name":"dog-jar-test","namespace":"default"},"spec":{"replicas":2...
+Selector:               app=dog-jar,release=canary
+Replicas:               2 desired | 2 updated | 2 total | 2 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  app=dog-jar
+           release=canary
+  Containers:
+   dog-jar:
+    Image:        alpine/jar-dog:v01
+    Port:         8080/TCP
+    Host Port:    0/TCP
+    Environment:  <none>
+    Mounts:       <none>
+  Volumes:        <none>
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  <none>
+NewReplicaSet:   dog-jar-test-69f5554b94 (2/2 replicas created)
+Events:
+  Type    Reason             Age    From                   Message
+  ----    ------             ----   ----                   -------
+  Normal  ScalingReplicaSet  7m10s  deployment-controller  Scaled up replica set dog-jar-test-69f5554b94 to 2
+
+增加到3个副本
+kubectl patch deployments dog-jar-test -p '{"spec":{"replicas":2}}'
+
+-----------------------------------------------
+金丝雀更新
+[root@ku209 ~]# kubectl set image deployment dog-jar-test dog-jar=alpine/jar-dog:v01 && kubectl rollout pause deployment dog-jar-test 
+deployment.extensions/dog-jar-test image updated
+deployment.extensions/dog-jar-test paused
+
+
+观察一下如果没有问题就更新了
+[root@ku209 ~]# kubectl rollout status deployment dog-jar-test 
+Waiting for deployment "dog-jar-test" rollout to finish: 1 out of 3 new replicas have been updated...
+
+确认更新
+[root@ku209 ~]# kubectl rollout resume deployment dog-jar-test 
+deployment.extensions/dog-jar-test resumed
+
+----------------------------------------------------------
+
+
+观察更新成功
+^C[root@ku209 ~]# kubectl rollout status deployment dog-jar-test 
+Waiting for deployment "dog-jar-test" rollout to finish: 1 out of 3 new replicas have been updated...
+Waiting for deployment spec update to be observed...
+Waiting for deployment spec update to be observed...
+Waiting for deployment "dog-jar-test" rollout to finish: 1 out of 3 new replicas have been updated...
+Waiting for deployment "dog-jar-test" rollout to finish: 1 out of 3 new replicas have been updated...
+Waiting for deployment "dog-jar-test" rollout to finish: 2 out of 3 new replicas have been updated...
+Waiting for deployment "dog-jar-test" rollout to finish: 2 out of 3 new replicas have been updated...
+Waiting for deployment "dog-jar-test" rollout to finish: 2 out of 3 new replicas have been updated...
+Waiting for deployment "dog-jar-test" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "dog-jar-test" rollout to finish: 1 old replicas are pending termination...
+deployment "dog-jar-test" successfully rolled out
+
+
+查看版本
+[root@ku209 ~]# kubectl get rs -o wide
+NAME                      DESIRED   CURRENT   READY   AGE   CONTAINERS   IMAGES               SELECTOR
+dog-jar-test-69f5554b94   3         3         3       46m   dog-jar      alpine/jar-dog:v01   app=dog-jar,pod-template-hash=69f5554b94,release=canary
+dog-jar-test-6f58f96577   0         0         0       31m   dog-jar      new-fish/war:v00     app=dog-jar,pod-template-hash=6f58f96577,release=canary
+
+
+查看历史版本
+[root@ku209 ~]# kubectl rollout history deployment dog-jar-test 
+deployment.extensions/dog-jar-test 
+REVISION  CHANGE-CAUSE
+2         <none>
+3         <none>
+
+回滚到第2版
+[root@ku209 ~]# kubectl rollout undo deployment dog-jar-test --to-revision=2
+deployment.extensions/dog-jar-test rolled back
+
+
+查看当前使用的版本
+[root@ku209 ~]# kubectl get rs -o wide
+NAME                      DESIRED   CURRENT   READY   AGE   CONTAINERS   IMAGES               SELECTOR
+dog-jar-test-69f5554b94   0         0         0       51m   dog-jar      alpine/jar-dog:v01   app=dog-jar,pod-template-hash=69f5554b94,release=canary
+dog-jar-test-6f58f96577   3         3         3       36m   dog-jar      new-fish/war:v00     app=dog-jar,pod-template-hash=6f58f96577,release=canary
