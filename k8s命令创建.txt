@@ -1,0 +1,17 @@
+
+命令行创建
+[root@k8-5 nhiox]# kubectl run  nginx --image=nginx:vv01 --port=80 --replicas=1
+
+kubectl run --generator=deployment/apps.v1 is DEPRECATED and will be removed in a future version. Use kubectl run --generator=run-pod/v1 or kubectl create instead.
+deployment.apps/nginx created
+[root@k8-5 nhiox]# kubectl get pods
+NAME                     READY   STATUS    RESTARTS   AGE
+nginx-5d58944bb7-zgxzw   1/1     Running   0          7s
+
+ 暴露集群端口
+[root@k8-5 nhiox]# kubectl expose deployment nginx  --port=80 --target-port=80 --protocol=TCP
+service/nginx exposed
+[root@k8-5 nhiox]# kubectl get svc
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP   4d5h
+nginx        ClusterIP   10.100.59.242   <none>        80/TCP    7s
