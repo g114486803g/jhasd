@@ -1,0 +1,8 @@
+#重新生成新的token，在master端执行
+kubeadm token create --print-join-command
+
+---------------------如下－－－－－－－－－－－－－－－－－－
+
+kubeadm token create --print-join-command
+
+kubeadm join 172.16.8.5:6443 --token k68fla.ejr0182edbx54x1m     --discovery-token-ca-cert-hash sha256:54d01f575a54375d854d16a569ccbc22a663dc915158a5eea3eba85acf0c8518 
