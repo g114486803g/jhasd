@@ -6,6 +6,7 @@ serviceaccount/def-ns-admin created
 rolebinding.rbac.authorization.k8s.io/def-ns-admin created
 
 
+查看
 [root@k8-5 pki]# kubectl get secrets 
 NAME                       TYPE                                  DATA   AGE
 def-ns-admin-token-2g2dp   kubernetes.io/service-account-token   3      3m16s
@@ -33,7 +34,7 @@ namespace:  7 bytes
 [root@k8-5 pki]# kubectl config set-cluster kubernetes --certificate-authority=./ca.crt --server="https://172.16.8.5:6443" --embed-certs=true --kubeconfig=/root/kubelet.kubeconfig
 Cluster "kubernetes" set.
 
-
+查看
 [root@k8-5 pki]# kubectl config view --kubeconfig=/root/kubelet.kubeconfig
 apiVersion: v1
 clusters:
@@ -58,7 +59,7 @@ DEF_NS_ADMIN_TOKEN=$(kubectl get secrets def-ns-admin-token-2g2dp -o jsonpath={.
 User "def-ns-admin" set.
 
 
-
+查看
 [root@k8-5 pki]# kubectl config view --kubeconfig=/root/def-ns-admin.conf
 apiVersion: v1
 clusters: []
