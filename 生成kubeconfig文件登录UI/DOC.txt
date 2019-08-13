@@ -1,0 +1,85 @@
+[root@k8-5 pki]# kubectl create serviceaccount def-ns-admin -n default
+serviceaccount/def-ns-admin created
+
+
+[root@k8-5 pki]# kubectl create rolebinding def-ns-admin --clusterrole=admin --serviceaccount=default:def-ns-admin
+rolebinding.rbac.authorization.k8s.io/def-ns-admin created
+
+
+[root@k8-5 pki]# kubectl get secrets 
+NAME                       TYPE                                  DATA   AGE
+def-ns-admin-token-2g2dp   kubernetes.io/service-account-token   3      3m16s
+
+
+这个token也可以登录
+[root@k8-5 pki]# kubectl describe secrets def-ns-admin-token-2g2dp 
+Name:         def-ns-admin-token-2g2dp
+Namespace:    default
+Labels:       <none>
+Annotations:  kubernetes.io/service-account.name: def-ns-admin
+              kubernetes.io/service-account.uid: f46a5b3c-da94-48bc-b2ac-21bb264854bf
+
+Type:  kubernetes.io/service-account-token
+
+Data
+====
+token:      eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZi1ucy1hZG1pbi10b2tlbi0yZzJkcCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJkZWYtbnMtYWRtaW4iLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiJmNDZhNWIzYy1kYTk0LTQ4YmMtYjJhYy0yMWJiMjY0ODU0YmYiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6ZGVmYXVsdDpkZWYtbnMtYWRtaW4ifQ.fOFzL2TS05vOmsIBD8D6YWKwtYQRIC6mBVbIAJkVYWt_lPjKCyrU55jvcm6cjxs3c_PLH1Zs5-vptVVhhNpvZ5Pjfsc88Igyp9UraYcxO1QoJF2CtjiV9ZmK_D2mag-ty2hiOErAeFV6IlwNRgkHD-PstVNyAdQxERbDzOnfcu7Ii-PLigT2IHcJIfuuGW_Q1rgNySNYMQaS_HSSHhhbb0oedDABJyy5PaagEeON9BTAZ12dnN6kybrDAJ_griny6YUoS3VZs76yzTsDhzoCPhz6TV-Bt2-1cSNfuQM-a9iy36KBpkr2eQa9cQ_7bvahN1EDL5wJcEmKJyvYxbNGTg
+ca.crt:     1025 bytes
+namespace:  7 bytes
+
+
+
+
+[root@k8-5 pki]# kubectl config set-cluster kubernetes --certificate-authority=./ca.crt --server="https://172.16.8.5:6443" --embed-certs=true --kubeconfig=/root/kubelet.kubeconfig
+Cluster "kubernetes" set.
+
+
+[root@k8-5 pki]# kubectl config view --kubeconfig=/root/kubelet.kubeconfig
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: DATA+OMITTED
+    server: https://172.16.8.5:6443
+  name: kubernetes
+contexts: []
+current-context: ""
+kind: Config
+preferences: {}
+users: []
+
+
+
+做个变量　kubectl get secrets ＮＡＭＥ -o jsonpath={.data.token} | base64 -d
+
+DEF_NS_ADMIN_TOKEN=$(kubectl get secrets def-ns-admin-token-2g2dp -o jsonpath={.data.token} | base64 -d)
+
+
+[root@k8-5 pki]# kubectl config set-credentials def-ns-admin --token=$DEF_NS_ADMIN_TOKEN --kubeconfig=/root/def-ns-admin.conf
+User "def-ns-admin" set.
+
+
+
+[root@k8-5 pki]# kubectl config view --kubeconfig=/root/def-ns-admin.conf
+apiVersion: v1
+clusters: []
+contexts: []
+current-context: ""
+kind: Config
+preferences: {}
+users:
+- name: def-ns-admin
+  user:
+    token: eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6ImRlZi1ucy1hZG1pbi10b2tlbi0yZzJkcCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJkZWYtbnMtYWRtaW4iLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiJmNDZhNWIzYy1kYTk0LTQ4YmMtYjJhYy0yMWJiMjY0ODU0YmYiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6ZGVmYXVsdDpkZWYtbnMtYWRtaW4ifQ.fOFzL2TS05vOmsIBD8D6YWKwtYQRIC6mBVbIAJkVYWt_lPjKCyrU55jvcm6cjxs3c_PLH1Zs5-vptVVhhNpvZ5Pjfsc88Igyp9UraYcxO1QoJF2CtjiV9ZmK_D2mag-ty2hiOErAeFV6IlwNRgkHD-PstVNyAdQxERbDzOnfcu7Ii-PLigT2IHcJIfuuGW_Q1rgNySNYMQaS_HSSHhhbb0oedDABJyy5PaagEeON9BTAZ12dnN6kybrDAJ_griny6YUoS3VZs76yzTsDhzoCPhz6TV-Bt2-1cSNfuQM-a9iy36KBpkr2eQa9cQ_7bvahN1EDL5wJcEmKJyvYxbNGTg
+
+
+[root@k8-5 pki]# kubectl config set-context def-ns-admin@kubernetes --cluster=kubernetes --user=def-ns-admin --kubeconfig=/root/def-ns-admin.conf
+Context "def-ns-admin@kubernetes" created.
+
+
+
+
+[root@k8-5 pki]# kubectl config use-context def-ns-admin@kubernetes --kubeconfig=/root/def-ns-admin.conf
+Switched to context "def-ns-admin@kubernetes".
+
+
+
