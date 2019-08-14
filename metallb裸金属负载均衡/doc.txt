@@ -1,0 +1,8 @@
+https://leeif.me/2019/02/k8s-deploy-metallb-LoadBalancer.html
+
+
+https://blog.csdn.net/weixin_34077371/article/details/90775738
+
+https://blog.csdn.net/networken/article/details/85928369
+
+https://blog.csdn.net/ygqygq2/article/details/88722299
