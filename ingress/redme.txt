@@ -1,0 +1,65 @@
+1. 修改镜像（我的是最新镜像）
+ image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.25.0
+ 
+ kubectl apply -f mandatory.yaml
+ 
+ --------------------------------
+ 2.nodeport方式对外提供服务：
+通过ingress-controller对外提供服务，现在还需要手动给ingress-controller建立一个servcie，接收集群外部流量。
+service-nodeport配置文件
+
+kubectl apply -f service-nodeport.yaml
+
+---------------------
+
+3.确保pod,server都正常
+[root@docker200 ~]# kubectl get pod -n ingress-nginx 
+NAME                                        READY   STATUS    RESTARTS   AGE
+nginx-ingress-controller-7995bd9c47-kvjbv   1/1     Running   0          6h4m
+
+[root@docker200 ~]# kubectl get svc -n ingress-nginx 
+NAME            TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+ingress-nginx   NodePort   10.101.143.236   <none>        80:30000/TCP,443:30791/TCP   4h54m
+
+
+4.创建ingress-nginx后端服务 后端Deployment(以tomcat为例)
+
+kubectl apply -f app-tomcat.yaml
+
+[root@docker200 ~]# kubectl get pods 
+tomcat-deploy-df9f5d75b-495dm   1/1     Running   0          3h23m
+tomcat-deploy-df9f5d75b-ctqmw   1/1     Running   0          3h23m
+tomcat-deploy-df9f5d75b-kz2tt   1/1     Running   0          3h23m
+-----------------------------------------------------------------
+
+5.创建myapp的ingress规则
+ kubectl apply -f ingress-tomcat.yaml
+[root@docker200 ingress-nginx]# kubectl get ingress
+NAME            HOSTS           ADDRESS   PORTS   AGE
+ingress-myapp   tomcat.jb.com             80      4h56m
+
+确保可以登录
+ kubectl exec -n ingress-nginx -ti nginx-ingress-controller-7995bd9c47-kvjbv -- /bin/sh
+ 
+ ---------------------------------------------------------------------------------------
+ 
+ 最后找一台客户机绑定hosts文件的域名
+ 
+ [root@api53 ~]# cat /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.1.200  tomcat.jb.com
+
+查看流量开始分发
+[root@api53 ~]# while true; do  curl tomcat.jb.com:30000;  sleep 1; done
+tomcat-deploy-df9f5d75b-495dm
+tomcat-deploy-df9f5d75b-kz2tt
+tomcat-deploy-df9f5d75b-495dm
+tomcat-deploy-df9f5d75b-kz2tt
+tomcat-deploy-df9f5d75b-ctqmw
+tomcat-deploy-df9f5d75b-495dm
+
+------------------以上nginx-ingress调度器配置结束-------------------------
+
+ 
+
