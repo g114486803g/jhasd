@@ -1,5 +1,9 @@
+参考官方
+
 https://kubernetes.github.io/ingress-nginx/deploy/
 
+个人参考
+https://blog.csdn.net/networken/article/details/85881558
 
 
 [root@k8-5 ~]# kubectl create namespace devj
