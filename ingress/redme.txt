@@ -3,6 +3,7 @@
  
  kubectl apply -f mandatory.yaml
  
+ (需要翻墙的基佬可以使用我新上传的镜像 见脚本 ingress.sh)
  --------------------------------
  2.nodeport方式对外提供服务：
 通过ingress-controller对外提供服务，现在还需要手动给ingress-controller建立一个servcie，接收集群外部流量。
