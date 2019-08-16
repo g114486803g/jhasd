@@ -33,7 +33,9 @@ DirectoryOrCreate  宿主机上不存在创建此目录
 Directory 必须存在挂载目录  
 FileOrCreate 宿主机上不存在挂载文件就创建  
 File 必须存在文件  
+
 （2）清单定义
+wget https://github.com/g114486803g/k8s-/raw/master/%E5%AD%98%E5%82%A8%E5%8D%B7/pod-hostpath-vol.yaml
 [root@k8s-master volumes]# vim pod-hostpath-vol.yaml
 
 apiVersion: v1
