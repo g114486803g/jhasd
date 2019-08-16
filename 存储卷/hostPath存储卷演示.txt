@@ -1,0 +1,72 @@
+hostPath存储卷演示
+hostPath宿主机路径，就是把pod所在的宿主机之上的脱离pod中的容器名称空间的之外的宿主机的文件系统的某一目录和pod建立关联关系，在pod删除时，存储数据不会丢失
+
+（1）查看hostPath存储类型定义
+[root@k8s-master volumes]# kubectl explain pods.spec.volumes.hostPath  
+KIND:     Pod
+VERSION:  v1
+
+RESOURCE: hostPath <Object>
+
+DESCRIPTION:
+     HostPath represents a pre-existing file or directory on the host machine
+     that is directly exposed to the container. This is generally used for
+     system agents or other privileged things that are allowed to see the host
+     machine. Most containers will NOT need this. More info:
+     https://kubernetes.io/docs/concepts/storage/volumes#hostpath
+
+     Represents a host path mapped into a pod. Host path volumes do not support
+     ownership management or SELinux relabeling.
+
+FIELDS:
+   path <string> -required-  #指定宿主机的路径
+     Path of the directory on the host. If the path is a symlink, it will follow
+     the link to the real path. More info:
+     https://kubernetes.io/docs/concepts/storage/volumes#hostpath
+
+   type <string>
+     Type for HostPath Volume Defaults to "" More info:
+     https://kubernetes.io/docs/concepts/storage/volumes#hostpath
+
+type：
+DirectoryOrCreate  宿主机上不存在创建此目录  
+Directory 必须存在挂载目录  
+FileOrCreate 宿主机上不存在挂载文件就创建  
+File 必须存在文件  
+（2）清单定义
+[root@k8s-master volumes]# vim pod-hostpath-vol.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-vol-hostpath
+  namespace: default
+spec:
+  containers:
+  - name: myapp-volume1
+    image: nginx:v01
+    volumeMounts:
+    - name: html
+      mountPath: /www/web
+  volumes:
+    - name: html
+      hostPath:
+        path: /data/pod/volume1
+        type: DirectoryOrCreate
+
+（3）在node节点上创建挂载目录
+[root@k8s-node01 ~]# mkdir -p /data/pod/volume1
+[root@k8s-node01 ~]# vim /data/pod/volume1/index.html
+033
+[root@k8s-node02 ~]# mkdir -p /data/pod/volume1
+[root@k8s-node02 ~]# vim /data/pod/volume1/index.html
+0222
+[root@k8s-master volumes]# kubectl apply -f pod-hostpath-vol.yaml 
+pod/pod-vol-hostpath created
+
+
+[root@master100 vlom]# kubectl get pods -o wide
+NAME                            READY   STATUS    RESTARTS   AGE    IP           NODE        NOMINATED NODE   READINESS GATES
+pod-vol-hostpath                1/1     Running   0          29m    10.244.1.6   node1-104   <none>           <none>
+
+
