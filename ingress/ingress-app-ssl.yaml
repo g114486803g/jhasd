@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-myapp-ssl
+  namespace: default
+  annotations:
+    kubernetes.io/infress.class: "nginx"
+
+spec:
+  tls:
+  - hosts:
+    - tomcat.jb.com
+    secretName: tomcat-ingress-secret-jsj
+  rules:
+  - host: tomcat.jb.com
+    http:
+      paths:
+      - path:
+        backend:
+          serviceName: tomcat
+          servicePort: 80
