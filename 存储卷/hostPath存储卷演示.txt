@@ -70,3 +70,15 @@ NAME                            READY   STATUS    RESTARTS   AGE    IP          
 pod-vol-hostpath                1/1     Running   0          29m    10.244.1.6   node1-104   <none>           <none>
 
 
+[root@master100 vlom]# kubectl delete -f pod-hostpath-vol.yaml   #删除pod，再重建，验证是否依旧可以访问原来的内容
+pod "pod-vol-hostpath" deleted
+[root@master100 vlom]# kubectl apply -f pod-hostpath-vol.yaml   
+pod/pod-vol-hostpath created
+
+[root@master100 vlom]# curl 10.244.1.7:/1.txt
+12313
+
+hostPath可以实现持久存储，但是在node节点故障时，也会导致数据的丢失
+
+
+
