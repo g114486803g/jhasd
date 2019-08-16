@@ -62,5 +62,10 @@ tomcat-deploy-df9f5d75b-495dm
 
 ------------------以上nginx-ingress调度器配置结束-------------------------
 
+ 以下是实验镜像
+docker pull registry.cn-shenzhen.aliyuncs.com/jbjb/k8s-images:nginx
+docker tag registry.cn-shenzhen.aliyuncs.com/jbjb/k8s-images:nginx nginx:v01
+docker rmi registry.cn-shenzhen.aliyuncs.com/jbjb/k8s-images:nginx
+
  
 
