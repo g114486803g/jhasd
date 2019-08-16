@@ -1,0 +1,96 @@
+1、资源指标和资源监控
+一个集群系统管理离不开监控，同样的Kubernetes也需要根据数据指标来采集相关数据，从而完成对集群系统的监控状况进行监测。这些指标总体上分为两个组成：监控集群本身和监控Pod对象，通常一个集群的衡量性指标包括以下几个部分：
+
+节点资源状态：主要包括网络带宽、磁盘空间、CPU和内存使用率
+节点的数量：即时性了解集群的可用节点数量可以为用户计算服务器使用的费用支出提供参考。
+运行的Pod对象：正在运行的Pod对象数量可以评估可用节点数量是否足够，以及节点故障时是否能平衡负载。
+另一个方面，对Pod资源对象的监控需求大概有以下三类：
+
+Kubernetes指标：监测特定应用程序相关的Pod对象的部署过程、副本数量、状态信息、健康状态、网络等等。
+容器指标：容器的资源需求、资源限制、CPU、内存、磁盘空间、网络带宽的实际占用情况。
+应用程序指标：应用程序自身的内建指标，和业务规则相关
+
+2、Weave Scope监控集群
+Weave Scope 是 Docker 和 Kubernetes 可视化监控工具。Scope 提供了至上而下的集群基础设施和应用的完整视图，用户可以轻松对分布式的容器化应用进行实时监控和问题诊断。 对于复杂的应用编排和依赖关系，scope可以使用清晰的图标一览应用状态和拓扑关系。
+
+（1）Weave Scope部署
+ wget https://cloud.weave.works/k8s/scope.yaml
+ 
+ kubectl apply -f scope.yaml
+ 
+ [root@master100 scope]# kubectl apply -f scope.yaml 
+namespace/weave created   #创建名称空间weave，也可以在创建时指定名称空间
+serviceaccount/weave-scope created  #创建serviceaccount
+clusterrole.rbac.authorization.k8s.io/weave-scope created
+clusterrolebinding.rbac.authorization.k8s.io/weave-scope created
+deployment.apps/weave-scope-app created  #创建deployment
+service/weave-scope-app created    #创建service
+deployment.apps/weave-scope-cluster-agent created    
+daemonset.extensions/weave-scope-agent created #创建deamonset
+
+[root@master100 scope]# kubectl get ns
+NAME              STATUS   AGE
+default           Active   3d13h
+ingress-nginx     Active   160m
+kube-node-lease   Active   3d13h
+kube-public       Active   3d13h
+kube-system       Active   3d13h
+weave             Active   8s
+[root@master100 scope]# kubectl get deployment -n weave
+NAME                        READY   UP-TO-DATE   AVAILABLE   AGE
+weave-scope-app             0/1     1            0           17s
+weave-scope-cluster-agent   0/1     1            0           16s
+[root@master100 scope]# kubectl get svc -n weave
+NAME              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+weave-scope-app   ClusterIP   10.110.240.115   <none>        80/TCP    27s
+
+需要稍微等一下，取决于你的网络
+[root@master100 scope]#  kubectl get pod -n weave
+NAME                                         READY   STATUS    RESTARTS   AGE
+weave-scope-agent-6rg79                      1/1     Running   0          5m39s
+weave-scope-agent-7v8fj                      1/1     Running   0          5m39s
+weave-scope-app-5fdbbc5668-k9jb9             1/1     Running   0          5m40s
+weave-scope-cluster-agent-5675956b87-fgnph   1/1     Running   0          5m39s
+
+
+DaemonSet weave-scope-agent，集群每个节点上都会运行的 scope agent 程序，负责收集数据。
+Deployment weave-scope-app，scope 应用，从 agent 获取数据，通过 Web UI 展示并与用户交互。
+Service weave-scope-app，默认是 ClusterIP 类型，为了方便已通过 kubectl edit 修改为 NodePort。
+
+[root@k8s-master mainfests]# kubectl edit svc/weave-scope-app -n weave
+将service的type改为NodePort
+service/weave-scope-app edited
+
+[root@master100 scope]# kubectl get svc -n weave
+NAME              TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+weave-scope-app   NodePort   10.110.240.115   <none>        80:32003/TCP   14m
+-----------------------------------------------浏览器访问http://192.168.56.11:32003
+我的修改server。-------如下
+
+spec:
+  clusterIP: 10.110.240.115
+  externalTrafficPolicy: Cluster
+  ports:
+  - name: app
+    nodePort: 32003
+    port: 80
+    protocol: TCP
+    targetPort: 4040
+  selector:
+    app: weave-scope
+    name: weave-scope-app
+    weave-cloud-component: scope
+    weave-scope-component: app
+  sessionAffinity: None
+  type: NodePort   <<<--------------修改此处
+
+
+
+
+
+
+
+
+
+
+
