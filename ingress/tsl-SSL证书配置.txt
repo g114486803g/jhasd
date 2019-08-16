@@ -96,7 +96,7 @@ tls.key:  1675 bytes
 
 
 指定主机生效
-[root@docker200 ingress-nginx]# kubectl apply -f ssl-tomcat.yaml 
+[root@docker200 ingress-nginx]# kubectl apply -f ingress-app-ssl.yaml
 ingress.extensions/ingress-myapp-ssl created
 
 
