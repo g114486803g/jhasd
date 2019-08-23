@@ -1,0 +1,43 @@
+[root@master100 heik]# kubectl apply -f tiller-rabc.yaml 
+serviceaccount/tiller created
+clusterrolebinding.rbac.authorization.k8s.io/tiller created
+[root@master100 heik]# kubectl get sa -n kube-system 
+NAME                                 SECRETS   AGE
+tiller                               1         39s
+token-cleaner                        1         10d
+ttl-controller                       1         10d
+
+
+
+++++++以下由于无法科学上网使用离线安装++++++++++++++++++++++++++++++++++++++++++++++++
+镜像是2.14.3的镜像
+
+docker push registry.cn-shenzhen.aliyuncs.com/jbjb/k8s-jbs:tiller2143
+
+
+docker tag  registry.cn-shenzhen.aliyuncs.com/jbjb/k8s-jbs:tiller2143 gcr.io/kubernetes-helm/tiller:v2.14.3
+
+#得到以下就成功安装了tiller
+[root@master100 ~]# helm init --upgrade --service-account tiller -i gcr.io/kubernetes-helm/tiller:v2.14.3  --skip-refresh
+$HELM_HOME has been configured at /root/.helm.
+
+Tiller (the Helm server-side component) has been upgraded to the current version.
+
+[root@master100 ~]# kubectl get pods -n kube-system
+NAME                                READY   STATUS    RESTARTS   AGE
+tiller-deploy-8557598fbc-8pj6r      1/1     Running   0          16s   <<<<----必须runing
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+[root@master100 ~]# helm version
+Client: &version.Version{SemVer:"v2.14.3", GitCommit:"0e7f3b6637f7af8fcfddb3d2941fcc7cbebb0085", GitTreeState:"clean"}
+Server: &version.Version{SemVer:"v2.14.3", GitCommit:"0e7f3b6637f7af8fcfddb3d2941fcc7cbebb0085", GitTreeState:"clean"}
+
+
+
+
+
+
+helm init --service-account tiller -i registry.aliyuncs.com/google_containers/tiller:v2.14.3 --skip-refresh
