@@ -26,3 +26,6 @@ NAME           	CHART VERSION	APP VERSION	DESCRIPTION
 stable/redis   	1.1.15       	4.0.8      	Open source, advanced key-value store. It is often referr...
 stable/redis-ha	2.0.1        	           	Highly available Redis cluster with multiple sentinels an...
 stable/sensu   	0.2.0        	           	Sensu monitoring framework backed by the Redis transport    
+
+
+https://www.2cto.com/net/201901/794193.html
