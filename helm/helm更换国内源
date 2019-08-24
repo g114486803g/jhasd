@@ -1,0 +1,28 @@
+
+报错
+[root@master100 .helm]# helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Skip local chart repository
+...Unable to get an update from the "stable" chart repository (https://kubernetes-charts.storage.googleapis.com):
+	Get https://kubernetes-charts.storage.googleapis.com/index.yaml: read tcp 192.168.1.100:44768->172.217.160.112:443: read: connection reset by peer
+Update Complete.
+
+更换阿里云的源
+[root@master100 .helm]# helm repo add stable https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
+"stable" has been added to your repositories
+[root@master100 .helm]# helm init
+$HELM_HOME has been configured at /root/.helm.
+Warning: Tiller is already installed in the cluster.
+(Use --client-only to suppress this message, or --upgrade to upgrade Tiller to the current version.)
+[root@master100 .helm]# helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Skip local chart repository
+...Successfully got an update from the "stable" chart repository
+Update Complete.
+
+OK------------
+[root@master100 .helm]# helm search redis
+NAME           	CHART VERSION	APP VERSION	DESCRIPTION                                                 
+stable/redis   	1.1.15       	4.0.8      	Open source, advanced key-value store. It is often referr...
+stable/redis-ha	2.0.1        	           	Highly available Redis cluster with multiple sentinels an...
+stable/sensu   	0.2.0        	           	Sensu monitoring framework backed by the Redis transport    
