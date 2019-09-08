@@ -1,0 +1,32 @@
+官方文档
+https://istio.io/zh/docs/setup/kubernetes/install/kubernetes/
+
+wget https://github.com/istio/istio/releases/download/1.2.5/istio-1.2.5-linux.tar.gz
+wget http://enve.pro/dow/istio-1.2.5-osx.tar.gz
+
+
+[root@master13 ~]# cd /istio-1.2.5/install/kubernetes/helm/istio-init/files/
+总用量 32
+-rw-r--r-- 1 root root 13598 8月  24 12:52 crd-10.yaml
+-rw-r--r-- 1 root root   464 8月  24 12:52 crd-11.yaml
+-rw-r--r-- 1 root root   448 8月  24 12:52 crd-12.yaml
+-rw-r--r-- 1 root root  2155 8月  24 12:52 crd-certmanager-10.yaml
+-rw-r--r-- 1 root root  2307 8月  24 12:52 crd-certmanager-11.yaml
+
+执行所有crd*.yaml
+kubectl apply -f .
+
+在执行
+
+cd /istio-1.2.5/install/kubernetes/
+
+kubectl apply -f istio-demo.yaml
+
+-----------------------------------------
+
+kiali安装
+官方文党
+http://www.kiali.io/contribute/
+bash <(curl -L https://git.io/getLatestKialiOperator)
+
+--------------------------------------------------------------------------
