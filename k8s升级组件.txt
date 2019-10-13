@@ -1,0 +1,110 @@
+kubeadm upgrade plan
+kubeadm upgrade apply v1.16.1
+
+
+
+[root@master13 tmp]# kubeadm upgrade plan
+[upgrade/config] Making sure the configuration is correct:
+[upgrade/config] Reading configuration from the cluster...
+[upgrade/config] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -oyaml'
+[preflight] Running pre-flight checks.
+[upgrade] Making sure the cluster is healthy:
+[upgrade] Fetching available versions to upgrade to
+[upgrade/versions] Cluster version: v1.15.2
+[upgrade/versions] kubeadm version: v1.16.1
+W1014 01:39:22.364150     492 version.go:101] could not fetch a Kubernetes version from the internet: unable to get URL "https://dl.k8s.io/release/stable.txt": Get https://dl.k8s.io/release/stable.txt: net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+W1014 01:39:22.364216     492 version.go:102] falling back to the local client version: v1.16.1
+[upgrade/versions] Latest stable version: v1.16.1
+W1014 01:39:32.387324     492 version.go:101] could not fetch a Kubernetes version from the internet: unable to get URL "https://dl.k8s.io/release/stable-1.15.txt": Get https://dl.k8s.io/release/stable-1.15.txt: net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+W1014 01:39:32.387362     492 version.go:102] falling back to the local client version: v1.16.1
+[upgrade/versions] Latest version in the v1.15 series: v1.16.1
+
+Components that must be upgraded manually after you have upgraded the control plane with 'kubeadm upgrade apply':
+COMPONENT   CURRENT       AVAILABLE
+Kubelet     2 x v1.15.2   v1.16.1
+            1 x v1.16.1   v1.16.1
+
+Upgrade to the latest version in the v1.15 series:
+
+COMPONENT            CURRENT   AVAILABLE
+API Server           v1.15.2   v1.16.1
+Controller Manager   v1.15.2   v1.16.1
+Scheduler            v1.15.2   v1.16.1
+Kube Proxy           v1.15.2   v1.16.1
+CoreDNS              1.3.1     1.6.2
+Etcd                 3.3.10    3.3.15-0
+
+You can now apply the upgrade by executing the following command:
+
+	kubeadm upgrade apply v1.16.1
+
+_____________________________________________________________________
+
+[root@master13 tmp]# docker images 
+REPOSITORY                                                        TAG                 IMAGE ID            CREATED             SIZE
+registry.aliyuncs.com/google_containers/kube-scheduler            v1.15.2             88fa9cb27bd2        2 months ago        81.1MB
+registry.aliyuncs.com/google_containers/kube-controller-manager   v1.15.2             9f5df470155d        2 months ago        159MB
+registry.aliyuncs.com/google_containers/kube-proxy                v1.15.2             167bbf6c9338        2 months ago        82.4MB
+registry.aliyuncs.com/google_containers/kube-apiserver            v1.15.2             34a53be6c9a7        2 months ago        207MB
+weaveworks/scope                                                  1.11.4              a082d48f0b39        2 months ago        78.5MB
+quay.io/coreos/flannel                                            v0.11.0-amd64       ff281650a721        8 months ago        52.6MB
+registry.aliyuncs.com/google_containers/coredns                   1.3.1               eb516548c180        9 months ago        40.3MB
+registry.aliyuncs.com/google_containers/etcd                      3.3.10              2c4adeb21b4f        10 months ago       258MB
+registry.aliyuncs.com/google_containers/pause                     3.1                 da86e6ba6ca1        22 months ago       742kB
+[root@master13 tmp]# kubeadm upgrade apply v1.16.1
+[upgrade/config] Making sure the configuration is correct:
+[upgrade/config] Reading configuration from the cluster...
+[upgrade/config] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -oyaml'
+[preflight] Running pre-flight checks.
+[upgrade] Making sure the cluster is healthy:
+[upgrade/version] You have chosen to change the cluster version to "v1.16.1"
+[upgrade/versions] Cluster version: v1.15.2
+[upgrade/versions] kubeadm version: v1.16.1
+[upgrade/confirm] Are you sure you want to proceed with the upgrade? [y/N]: y
+[upgrade/prepull] Will prepull images for components [kube-apiserver kube-controller-manager kube-scheduler etcd]
+[upgrade/prepull] Prepulling image for component etcd.
+[upgrade/prepull] Prepulling image for component kube-apiserver.
+[upgrade/prepull] Prepulling image for component kube-controller-manager.
+[upgrade/prepull] Prepulling image for component kube-scheduler.
+[apiclient] Found 0 Pods for label selector k8s-app=upgrade-prepull-etcd
+[apiclient] Found 1 Pods for label selector k8s-app=upgrade-prepull-kube-scheduler
+[apiclient] Found 1 Pods for label selector k8s-app=upgrade-prepull-kube-apiserver
+[apiclient] Found 1 Pods for label selector k8s-app=upgrade-prepull-kube-controller-manager
+[apiclient] Found 1 Pods for label selector k8s-app=upgrade-prepull-etcd
+[upgrade/prepull] Prepulled image for component kube-scheduler.
+[upgrade/prepull] Prepulled image for component kube-controller-manager.
+[upgrade/prepull] Prepulled image for component kube-apiserver.
+[upgrade/prepull] Prepulled image for component etcd.
+[upgrade/prepull] Successfully prepulled the images for all the control plane components
+[upgrade/apply] Upgrading your Static Pod-hosted control plane to version "v1.16.1"...
+Static pod: kube-apiserver-master13 hash: b4f38e649021515234e7e29e77b878cb
+Static pod: kube-controller-manager-master13 hash: 48f4d7055bc6ff4f2f9e142bb9ec0b9b
+Static pod: kube-scheduler-master13 hash: 67ac23aef30c9d3cd29caa6c38747767
+[upgrade/etcd] Upgrading to TLS for etcd
+Static pod: etcd-master13 hash: d946e677480a510808b718d78bda8f25
+[upgrade/staticpods] Preparing for "etcd" upgrade
+[upgrade/staticpods] Renewing etcd-server certificate
+[upgrade/staticpods] Renewing etcd-peer certificate
+[upgrade/staticpods] Renewing etcd-healthcheck-client certificate
+[upgrade/staticpods] Moved new manifest to "/etc/kubernetes/manifests/etcd.yaml" and backed up old manifest to "/etc/kubernetes/tmp/kubeadm-backup-manifests-2019-10-14-01-42-54/etcd.yaml"
+[upgrade/staticpods] Waiting for the kubelet to restart the component
+[upgrade/staticpods] This might take a minute or longer depending on the component/version gap (timeout 5m0s)
+Static pod: etcd-master13 hash: d946e677480a510808b718d78bda8f25
+Static pod: etcd-master13 hash: d946e677480a510808b718d78bda8f25
+Static pod: etcd-master13 hash: d946e677480a510808b718d78bda8f25
+Static pod: etcd-master13 hash: d946e677480a510808b718d78bda8f25
+Static pod: etcd-master13 hash: ddfd31b508aba15f508f36fd4fec8541
+[apiclient] Found 1 Pods for label selector component=etcd
+[upgrade/staticpods] Component "etcd" upgraded successfully!
+[upgrade/etcd] Waiting for etcd to become available
+[upgrade/staticpods] Writing new Static Pod manifests to "/etc/kubernetes/tmp/kubeadm-upgraded-manifests102593268"
+[upgrade/staticpods] Preparing for "kube-apiserver" upgrade
+[upgrade/staticpods] Renewing apiserver certificate
+[upgrade/staticpods] Renewing apiserver-kubelet-client certificate
+[upgrade/staticpods] Renewing front-proxy-client certificate
+[upgrade/staticpods] Renewing apiserver-etcd-client certificate
+[upgrade/staticpods] Moved new manifest to "/etc/kubernetes/manifests/kube-apiserver.yaml" and backed up old manifest to "/etc/kubernetes/tmp/kubeadm-backup-manifests-2019-10-14-01-42-54/kube-apiserver.yaml"
+[upgrade/staticpods] Waiting for the kubelet to restart the component
+[upgrade/staticpods] This might take a minute or longer depending on the component/version gap (timeout 5m0s)
+Static pod: kube-apiserver-master13 hash: b4f38e649021515234e7e29e77b878cb
+Static pod: kube-apiserver-master13 hash: b4f38e649021515234e7e29e77b878cb
