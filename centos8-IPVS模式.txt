@@ -1,0 +1,60 @@
+所有节点必须安装内核包
+yum install ipset ipvsadm
+
+cat > /etc/sysctl.d/k8s.conf << EOF
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+vm.swappiness = 0
+EOF
+
+#立刻生效
+modprobe br_netfilter
+sysctl -p /etc/sysctl.d/k8s.conf
+
+
+保证在节点重启后能自动加载所需模块
+vim /etc/sysconfig/modules/ipvs.modules
+
+#!/bin/sh
+ipvs_mods_dir="/usr/lib/modules/$(uname -r)/kernel/net/netfilter/ipvs/"
+for mod in `ls ${ipvs_mods_dir} | grep -o "^[^.]*"`; do
+    /sbin/modprobe $mod
+done
+
+
+chmod +x /etc/sysconfig/modules/ipvs.modules && /etc/sysconfig/modules/ipvs.modules
+
+
+#查看是否已经正确加载所需的内核模块
+lsmod | grep -e ip_vs -e nf_conntrack_ipv4
+cut -f1 -d " "  /proc/modules | grep -e ip_vs -e nf_conntrack_ipv4
+lsmod | grep ip_vs
+
+
+ipvsadm工具检查 kube-proxy 是否维护正确的 ipvs 规则，比如，我们在集群中有以下一些服务：
+[root@master ~]# kubectl get svc --all-namespaces
+NAMESPACE     NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                  AGE
+default       kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP                  28m
+kube-system   kube-dns     ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP,9153/TCP   28m
+
+#master节点配置完成
+
+
+-------------------------------------------------
+
+转到node节点
+可以得到如下的一些 ipvs 代理规则，
+得到以下就成功了
+[root@test ~]# ipvsadm -ln
+IP Virtual Server version 1.2.1 (size=4096)
+Prot LocalAddress:Port Scheduler Flags
+  -> RemoteAddress:Port           Forward Weight ActiveConn InActConn
+TCP  10.96.0.1:443 rr
+  -> 2.1.1.22:6443                Masq    1      0          0         
+TCP  10.96.0.10:53 rr
+  -> 10.88.0.2:53                 Masq    1      0          0         
+TCP  10.96.0.10:9153 rr
+  -> 10.88.0.2:9153               Masq    1      0          0         
+UDP  10.96.0.10:53 rr
+  -> 10.88.0.2:53                 Masq    1      0          0  
