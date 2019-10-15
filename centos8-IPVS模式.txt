@@ -39,6 +39,7 @@ default       kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP       
 kube-system   kube-dns     ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP,9153/TCP   28m
 
 ====================================================================================
+[root@master] ~$ kubectl edit cm kube-proxy -n kube-system
 
 修改ConfigMap的kube-system/kube-proxy中的config.conf
 
@@ -199,5 +200,7 @@ ens32: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
         TX packets 1881  bytes 205219 (200.4 KiB)
         TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
 
+  https://blog.csdn.net/fanren224/article/details/86548398
+  
   
   
