@@ -38,23 +38,61 @@ NAMESPACE     NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)       
 default       kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP                  28m
 kube-system   kube-dns     ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP,9153/TCP   28m
 
-#master节点配置完成
+====================================================================================
+
+修改ConfigMap的kube-system/kube-proxy中的config.conf
+
+configmap/kube-proxy edited
+
+#修改如下
+kind: MasterConfiguration
+apiVersion: kubeadm.k8s.io/v1alpha1
+...
+ipvs:
+      excludeCIDRs: null
+      minSyncPeriod: 0s
+      scheduler: ""
+      syncPeriod: 30s
+    kind: KubeProxyConfiguration
+    metricsBindAddress: 127.0.0.1:10249
+    mode: "ipvs"                  #修改
+
+...
+
+原文链接：https://blog.csdn.net/fanren224/article/details/86548398
 
 
--------------------------------------------------
+[root@master nginx-test]# kubectl get pod -n kube-system | grep kube-proxy
+kube-proxy-6p7ff                 1/1     Running   2          2d1h
+kube-proxy-xvvbc                 1/1     Running   2          2d1h
 
-转到node节点
+重启各个节点上的kube-proxy（删除后会自动重新创建）
+
+[root@master nginx-test]# kubectl get pod -n kube-system | grep kube-proxy |awk '{system("kubectl delete pod "$1" -n kube-system")}'
+pod "kube-proxy-6p7ff" deleted
+pod "kube-proxy-xvvbc" deleted
+
+
+[root@master nginx-test]# kubectl get pod -n kube-system | grep kube-proxy 
+kube-proxy-f8d46                 1/1     Running   0          12s
+kube-proxy-wr5wz                 1/1     Running   0          23s
+
+
+
 可以得到如下的一些 ipvs 代理规则，
 得到以下就成功了
-[root@test ~]# ipvsadm -ln
+[root@master nginx-test]# ipvsadm -Ln
 IP Virtual Server version 1.2.1 (size=4096)
 Prot LocalAddress:Port Scheduler Flags
   -> RemoteAddress:Port           Forward Weight ActiveConn InActConn
+TCP  172.17.0.1:32150 rr
+  -> 10.244.1.6:80                Masq    1      0          0         
+  -> 10.244.1.7:80                Masq    1      0          0         
+  -> 10.244.1.8:80                Masq    1      0          0         
+TCP  2.1.1.20:32150 rr
+  -> 10.244.1.6:80                Masq    1      0          0         
+  -> 10.244.1.7:80                Masq    1      0          0         
+  -> 10.244.1.8:80                Masq    1      0          0         
 TCP  10.96.0.1:443 rr
-  -> 2.1.1.22:6443                Masq    1      0          0         
-TCP  10.96.0.10:53 rr
-  -> 10.88.0.2:53                 Masq    1      0          0         
-TCP  10.96.0.10:9153 rr
-  -> 10.88.0.2:9153               Masq    1      0          0         
-UDP  10.96.0.10:53 rr
-  -> 10.88.0.2:53                 Masq    1      0          0  
+  -> 2.1.1.20:6443                Masq    1      0          0    
+-------------------------------------------------
