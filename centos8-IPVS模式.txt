@@ -81,18 +81,123 @@ kube-proxy-wr5wz                 1/1     Running   0          23s
 
 可以得到如下的一些 ipvs 代理规则，
 得到以下就成功了
-[root@master nginx-test]# ipvsadm -Ln
+
+[root@master ~]# ipvsadm -Ln
+IP Virtual Server version 1.2.1 (size=4096)
+Prot LocalAddress:Port Scheduler Flags
+  -> RemoteAddress:Port           Forward Weight ActiveConn InActConn
+TCP  2.1.1.20:32150 rr
+  -> 10.244.1.9:80                Masq    1      0          7         
+  -> 10.244.1.10:80               Masq    1      0          8         
+  -> 10.244.1.11:80               Masq    1      0          7         
+TCP  10.96.0.1:443 rr
+  -> 2.1.1.20:6443                Masq    1      3          0         
+TCP  10.96.0.10:53 rr
+  -> 10.244.0.6:53                Masq    1      0          0         
+  -> 10.244.0.7:53                Masq    1      0          0         
+TCP  10.96.0.10:9153 rr
+  -> 10.244.0.6:9153              Masq    1      0          0         
+  -> 10.244.0.7:9153              Masq    1      0          0         
+TCP  10.100.46.127:80 rr
+  -> 10.244.1.9:80                Masq    1      0          0         
+  -> 10.244.1.10:80               Masq    1      0          0         
+  -> 10.244.1.11:80               Masq    1      0          0         
+TCP  10.244.0.0:32150 rr
+  -> 10.244.1.9:80                Masq    1      0          0         
+  -> 10.244.1.10:80               Masq    1      0          0         
+  -> 10.244.1.11:80               Masq    1      0          0         
+TCP  10.244.0.1:32150 rr
+  -> 10.244.1.9:80                Masq    1      0          0         
+  -> 10.244.1.10:80               Masq    1      0          0         
+  -> 10.244.1.11:80               Masq    1      0          0         
+TCP  127.0.0.1:32150 rr
+  -> 10.244.1.9:80                Masq    1      0          0         
+  -> 10.244.1.10:80               Masq    1      0          0         
+  -> 10.244.1.11:80               Masq    1      0          0         
+TCP  172.17.0.1:32150 rr
+  -> 10.244.1.9:80                Masq    1      0          0         
+  -> 10.244.1.10:80               Masq    1      0          0         
+  -> 10.244.1.11:80               Masq    1      0          0         
+UDP  10.96.0.10:53 rr
+  -> 10.244.0.6:53                Masq    1      0          0         
+  -> 10.244.0.7:53                Masq    1      0          0   
+  
+  -------node节点也是-----
+  
+  [root@node ~]# ipvsadm -Ln
 IP Virtual Server version 1.2.1 (size=4096)
 Prot LocalAddress:Port Scheduler Flags
   -> RemoteAddress:Port           Forward Weight ActiveConn InActConn
 TCP  172.17.0.1:32150 rr
-  -> 10.244.1.6:80                Masq    1      0          0         
-  -> 10.244.1.7:80                Masq    1      0          0         
-  -> 10.244.1.8:80                Masq    1      0          0         
-TCP  2.1.1.20:32150 rr
-  -> 10.244.1.6:80                Masq    1      0          0         
-  -> 10.244.1.7:80                Masq    1      0          0         
-  -> 10.244.1.8:80                Masq    1      0          0         
+  -> 10.244.1.9:80                Masq    1      0          0         
+  -> 10.244.1.10:80               Masq    1      0          0         
+  -> 10.244.1.11:80               Masq    1      0          0         
+TCP  192.168.122.1:32150 rr
+  -> 10.244.1.9:80                Masq    1      0          0         
+  -> 10.244.1.10:80               Masq    1      0          0         
+  -> 10.244.1.11:80               Masq    1      0          0         
+TCP  2.1.1.21:32150 rr
+  -> 10.244.1.9:80                Masq    1      0          3         
+  -> 10.244.1.10:80               Masq    1      0          2         
+  -> 10.244.1.11:80               Masq    1      0          2         
 TCP  10.96.0.1:443 rr
-  -> 2.1.1.20:6443                Masq    1      0          0    
--------------------------------------------------
+  -> 2.1.1.20:6443                Masq    1      1          0         
+TCP  10.96.0.10:53 rr
+  -> 10.244.0.6:53                Masq    1      0          0         
+  -> 10.244.0.7:53                Masq    1      0          0         
+TCP  10.96.0.10:9153 rr
+  -> 10.244.0.6:9153              Masq    1      0          0         
+  -> 10.244.0.7:9153              Masq    1      0          0         
+TCP  10.100.46.127:80 rr
+  -> 10.244.1.9:80                Masq    1      0          0         
+  -> 10.244.1.10:80               Masq    1      0          0         
+  -> 10.244.1.11:80               Masq    1      0          0         
+TCP  10.244.1.0:32150 rr
+  -> 10.244.1.9:80                Masq    1      0          0         
+  -> 10.244.1.10:80               Masq    1      0          0         
+  -> 10.244.1.11:80               Masq    1      0          0         
+TCP  10.244.1.1:32150 rr
+  -> 10.244.1.9:80                Masq    1      0          0         
+  -> 10.244.1.10:80               Masq    1      0          0         
+  -> 10.244.1.11:80               Masq    1      0          0         
+TCP  127.0.0.1:32150 rr
+  -> 10.244.1.9:80                Masq    1      0          0         
+  -> 10.244.1.10:80               Masq    1      0          0         
+  -> 10.244.1.11:80               Masq    1      0          0         
+UDP  10.96.0.10:53 rr
+  -> 10.244.0.6:53                Masq    1      0          0         
+  -> 10.244.0.7:53                Masq    1      0          0   
+  
+  --------------------------------------------------------------------
+  
+  最后测试
+  
+  [root@node1 ~]# while true; do curl http://2.1.1.20:32150; sleep 1; done
+myapp-deploy-75f88d7b44-hsbpw
+myapp-deploy-75f88d7b44-2m72m
+myapp-deploy-75f88d7b44-q5rbp
+myapp-deploy-75f88d7b44-hsbpw
+myapp-deploy-75f88d7b44-2m72m
+myapp-deploy-75f88d7b44-q5rbp
+^C
+[root@node1 ~]# while true; do curl http://2.1.1.21:32150; sleep 1; done
+myapp-deploy-75f88d7b44-2m72m
+myapp-deploy-75f88d7b44-q5rbp
+myapp-deploy-75f88d7b44-hsbpw
+myapp-deploy-75f88d7b44-2m72m
+myapp-deploy-75f88d7b44-q5rbp
+myapp-deploy-75f88d7b44-hsbpw
+myapp-deploy-75f88d7b44-2m72m
+^C
+[root@node1 ~]# ifconfig ens32
+ens32: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 2.1.1.6  netmask 255.255.255.0  broadcast 2.1.1.255
+        inet6 fe80::9adc:f7da:9dfa:2669  prefixlen 64  scopeid 0x20<link>
+        ether 00:0c:29:55:30:71  txqueuelen 1000  (Ethernet)
+        RX packets 2934  bytes 2621510 (2.5 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 1881  bytes 205219 (200.4 KiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+  
+  
