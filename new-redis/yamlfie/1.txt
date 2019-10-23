@@ -1,1 +1,21 @@
-123
+先启动master 在启动slave,
+
+
+如果报错
+-DENIED Redis is running in protected modebecause protected mode is enabled, no bind address was specified, noauthentication password is requested to clients.   
+In this mode connections areonly accepted from the loopback interface. If you want to connect from externalcomputers to Redis you may adopt one of the following   
+solutions: 1) Justdisable protected mode sending the command 'CONFIG SET protected-mode no' fromthe loopback interface by connecting to Redis from the same host   
+the server isrunning, however MAKE SURE Redis is not publicly accessible from internet ifyou do so. Use CONFIG REWRITE to make this change permanent.   
+2) Alternativelyyou can just disable the protected mode by editing the Redis configurationfile, and setting the protected mode option to 'no', and then restarting theserver.   
+3) If you started the server manually just for testing, restart it withthe '--protected-mode no' option.   
+4) Setup a bind address or an authenticationpassword. NOTE: You only need to do one of the above things in order for theserver to start accepting connections from the outside.  
+Connection closed by foreign host.  
+-----------------------------
+
+
+
+
+修改redis的保护模式为no，不启用  
+127.0.0.1:6379> config set protected-mode "no"  
+OK
+
