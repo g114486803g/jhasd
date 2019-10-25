@@ -1,0 +1,110 @@
+服务端配置nfs服务器
+
+所有Node节点需要安装 nfs软件包 yum install nfs-utils
+
+查看成功
+[root@node22 ~]# showmount -e 2.1.1.19
+Export list for 2.1.1.19:
+/bbc4 *
+/bbc3 *
+/bbc2 *
+/bbc1 *
+/bbc  *   <<<<----------
+
+vim 2pv.yaml 
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv001
+  labels:
+    name: pv001
+spec:
+  nfs:
+    path: /bbc     <<---------------挂载的目录服务端必须要
+    server: 2.1.1.19
+  accessModes: ["ReadWriteMany","ReadWriteOnce"]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs    <<<<<---------------------必须nfs类型
+  capacity:
+    storage: 5Gi      <<<--------------5G以上磁盘大小
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv002
+  labels:
+  name: pv002
+spec:
+  nfs:
+    path: /bbc3
+    server: 2.1.1.19
+  accessModes: ["ReadWriteMany","ReadWriteOnce"]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+
+  capacity:
+    storage: 10Gi
+
+查看
+[root@master vlou]# kubectl get pv
+NAME    CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                       STORAGECLASS   REASON   AGE
+pv001   5Gi        RWO,RWX        Retain           Bound    default/myappdata-myapp-0   nfs                     10h
+pv002   10Gi       RWO,RWX        Retain           Bound    default/myappdata-myapp-1   nfs                     10h
+
+
+[root@master vlou]# cat statefset.yaml 
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-sts
+  labels:
+    app: myapp-sts
+spec:
+  ports:
+  - port: 6379
+    name: web
+  clusterIP: "None"   <<<<--------------必须要是无头服务
+  selector:
+    app: myapp-pod
+    
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: myapp
+  
+spec:
+  selector:
+    matchLabels:
+      app: myapp-pod
+  serviceName: "redis"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: myapp-pod
+        
+    spec:
+      containers:
+      - name: myapp
+        image: redism:v5
+        ports:
+        - containerPort: 6379
+          name: web
+        volumeMounts:
+        - name: myappdata
+          mountPath: /var/lib/redis
+  volumeClaimTemplates:
+  - metadata:
+      name: myappdata
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: "nfs"     <<<------------必须nfs类型
+      resources:
+        requests:
+          storage: 2Gi
+
+
