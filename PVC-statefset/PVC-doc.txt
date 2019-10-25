@@ -21,7 +21,7 @@ metadata:
     name: pv001
 spec:
   nfs:
-    path: /bbc     <<---------------挂载的目录服务端必须要
+    path: /bbc     <<---------------挂载的目录和服务端必须要有
     server: 2.1.1.19
   accessModes: ["ReadWriteMany","ReadWriteOnce"]
   persistentVolumeReclaimPolicy: Retain
