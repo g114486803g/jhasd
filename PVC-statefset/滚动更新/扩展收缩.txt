@@ -1,0 +1,36 @@
+[root@master ~]# kubectl get pods -o wide
+NAME      READY   STATUS    RESTARTS   AGE     IP            NODE     NOMINATED NODE   READINESS GATES
+myapp-0   1/1     Running   1          6h39m   10.244.2.46   node22   <none>           <none>
+
+
+扩展到2个POD
+[root@master ~]# kubectl scale statefulset myapp --replicas=2
+statefulset.apps/myapp scaled
+
+[root@master ~]# kubectl get pods -o wide
+NAME      READY   STATUS              RESTARTS   AGE     IP            NODE     NOMINATED NODE   READINESS GATES
+myapp-0   1/1     Running             1          6h40m   10.244.2.46   node22   <none>           <none>
+myapp-1   0/1     ContainerCreating   0          2s      <none>        node21   <none>           <none>
+[root@master ~]# kubectl get pods -o wide
+NAME      READY   STATUS    RESTARTS   AGE     IP            NODE     NOMINATED NODE   READINESS GATES
+myapp-0   1/1     Running   1          6h40m   10.244.2.46   node22   <none>           <none>
+myapp-1   1/1     Running   0          5s      10.244.3.52   node21   <none>           <none>
+[root@master ~]# 
+
+
+收缩到1个Pod
+[root@master ~]# kubectl patch statefulset  myapp -p '{"spec":{"replicas":1}}'
+statefulset.apps/myapp patched
+
+
+[root@master ~]# kubectl get pods -o wide
+NAME      READY   STATUS    RESTARTS   AGE     IP            NODE     NOMINATED NODE   READINESS GATES
+myapp-0   1/1     Running   1          6h44m   10.244.2.46   node22   <none>           <none>
+
+=========或者=================
+#扩容至三个pod
+kubectl scale sts myapp --replicas=3
+#然后重新缩容至两个pod
+kubectl scale sts myapp --replicas=2
+
+-=========================================
