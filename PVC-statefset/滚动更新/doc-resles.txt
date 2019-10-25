@@ -1,0 +1,67 @@
+[root@master ~]# kubectl get pods
+NAME      READY   STATUS    RESTARTS   AGE
+myapp-0   1/1     Running   1          7h38m
+myapp-1   1/1     Running   0          2s
+
+
+
+# 检查各pod中镜像版本并未发生改变(h
+
+[root@master vlou]# kubectl get pods -l app=myapp-pod -o custom-columns=NAME:metadata.name,IMAGE:spec.containers[0].image
+NAME      IMAGE
+myapp-0   redism:v5
+myapp-1   redism:v5
+
+
+
+
+
+更新之前查看一下镜像
+[root@master vlou]#  kubectl get pods -l app=myapp-pod -o custom-columns=NAME:metadata.name,IMAGE:spec.containers[0].image
+NAME      IMAGE
+myapp-0   redism:v5
+myapp-1   redism:v5
+
+# 首先将滚动更新分区制设置大于pod副本数量 （我的是两个所以是2）修改滚动更新策略，查看效果
+[root@master vlou]# kubectl patch statefulset myapp -p '{"spec":{"updateStrategy":{"rollingUpdate":{"partition":2}}}}'
+statefulset.apps/myapp patched
+
+#修改statefulset的image
+[root@master vlou]# kubectl set image statefulset myapp myapp=nginx:v1
+statefulset.apps/myapp image updated
+
+查看还是没有改变
+[root@master vlou]# kubectl get pods -l app=myapp-pod -o custom-columns=NAME:metadata.name,IMAGE:spec.containers[0].image
+NAME      IMAGE
+myapp-0   redism:v5
+myapp-1   redism:v5
+
+#再重新把partition改为0, 则把之前的pod的image都修改生效了
+
+[root@master vlou]# kubectl patch sts myapp -p '{"spec":{"updateStrategy":{"rollingUpdate":{"partition":0}}}}'
+statefulset.apps/myapp patched
+
+更新完成
+[root@master vlou]# kubectl get pods -l app=myapp-pod -o custom-columns=NAME:metadata.name,IMAGE:spec.containers[0].image
+NAME      IMAGE
+myapp-0   nginx:v1
+myapp-1   nginx:v1
+
+
+
+PS:
+
+------------------------------------------------
+因为策略写的是从第二个容器开始更新
+
+通过命令kubectl get pod myapp-1 -o yaml可以看到2之前的image没有改变
+
+通过命令kubectl get pod myapp-2 -o yaml可以看到2之后的image都已经改变了
+
+
+-----------------------------------------------------------------
+参考文档
+https://www.cnblogs.com/peitianwang/p/11507802.html
+
+
+
