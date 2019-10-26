@@ -1,0 +1,23 @@
+1.16.2版本必须安装这两个
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/mandatory.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/baremetal/service-nodeport.yaml
+
+官网
+https://kubernetes.github.io/ingress-nginx/deploy/
+
+
+查看已经安装完成
+[root@master1 2222]# kubectl get pods -n ingress-nginx 
+NAME                                        READY   STATUS    RESTARTS   AGE
+nginx-ingress-controller-568867bf56-n8b2r   1/1     Running   1          61m
+
+
+[root@master1 2222]# kubectl get pods -n ingress-nginx --show-labels
+NAME                                        READY   STATUS    RESTARTS   AGE   LABELS
+nginx-ingress-controller-568867bf56-n8b2r   1/1     Running   1          61m   app.kubernetes.io/name=ingress-nginx,app.kubernetes.io/part-of=ingress-nginx,pod-template-hash=568867bf56
+
+最后创建 pod 和是svc 测试
+
+
+
+
