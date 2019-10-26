@@ -18,6 +18,72 @@ nginx-ingress-controller-568867bf56-n8b2r   1/1     Running   1          61m   a
 
 最后创建 pod 和是svc 测试
 
+kubectl apply -f  nginx-svc.yaml  2nginx-svc.yaml
+ 
+ [root@master1 2222]# kubectl get svc
+NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP   72m
+myapp        ClusterIP   10.100.65.47   <none>        80/TCP    39m
+myapp2       ClusterIP   10.104.70.72   <none>        80/TCP    26m
+
+
+kubectl apply -f ingress.yaml
+  
+  
+[root@k8s-tets 2222]# kubectl get svc -n ingress-nginx 
+NAME            TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+ingress-nginx   NodePort   10.106.138.214   <none>        80:32128/TCP,443:31090/TCP   45m
+
+
+[root@k8s-tets 2222]# kubectl get ingress name-virtual-host-ingress 
+NAME                        HOSTS                    ADDRESS          PORTS   AGE
+name-virtual-host-ingress   jb.ooo.com,jb2.ooo.com   10.106.138.214   80      12m
 
 
 
+[root@node29 tmp]# while true; do curl http://jb2.ooo.com:32128; sleep 1; done
+222222aaaaaaaaaaaaaa
+222222bbbbbbbbb
+222222aaaaaaaaaaaaaa
+222222aaaaaaaaaaaaaa
+222222------
+222222------
+222222bbbbbbbbb
+^C
+[root@node29 tmp]# while true; do curl http://jb.ooo.com:32128; sleep 1; done
+111bbbbbbbbbb
+111bbbbbbbbbb
+1111111aaaaaaaaaa
+111kkkkkkk
+111kkkkkkk
+
+
+jb.ooo.com --|                 |-> jb.ooo.com service1:80
+              | 10.106.138.214  |
+jb2.ooo.com --|                 |-> jb2.ooo.com service2:80
+
+
+
+得到这个模式
+[root@master1 ~]# kubectl describe ingress name-virtual-host-ingress 
+Name:             name-virtual-host-ingress
+Namespace:        default
+Address:          10.106.138.214
+Default backend:  default-http-backend:80 (<none>)
+Rules:
+  Host         Path  Backends
+  ----         ----  --------
+  jb.ooo.com   
+                  myapp:80 (10.244.1.6:80,10.244.2.6:80,10.244.2.7:80)
+  jb2.ooo.com  
+                  myapp2:80 (10.244.1.7:80,10.244.2.8:80,10.244.2.9:80)
+Annotations:
+  kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"networking.k8s.io/v1beta1","kind":"Ingress","metadata":{"annotations":{},"name":"name-virtual-host-ingress","namespace":"default"},"spec":{"rules":[{"host":"jb.ooo.com","http":{"paths":[{"backend":{"serviceName":"myapp","servicePort":80}}]}},{"host":"jb2.ooo.com","http":{"paths":[{"backend":{"serviceName":"myapp2","servicePort":80}}]}}]}}
+
+Events:
+  Type    Reason  Age                From                      Message
+  ----    ------  ----               ----                      -------
+  Normal  CREATE  20m                nginx-ingress-controller  Ingress default/name-virtual-host-ingress
+  Normal  UPDATE  14m (x2 over 19m)  nginx-ingress-controller  Ingress default/name-virtual-host-ingress
+  
+  
