@@ -86,4 +86,6 @@ Events:
   Normal  CREATE  20m                nginx-ingress-controller  Ingress default/name-virtual-host-ingress
   Normal  UPDATE  14m (x2 over 19m)  nginx-ingress-controller  Ingress default/name-virtual-host-ingress
   
+  参考
+  https://www.cnblogs.com/klvchen/p/9903480.html
   
