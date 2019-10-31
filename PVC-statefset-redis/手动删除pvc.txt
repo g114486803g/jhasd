@@ -1,0 +1,79 @@
+手动删除pvc
+[root@master cac2]# kubectl delete pv --all
+persistentvolume "pv001" deleted
+persistentvolume "pv002" deleted
+
+
+
+myappdata-redis-master-0   Bound    pv002    10Gi       RWO,RWX        nfs            21m
+[root@master cac2]# kubectl delete -f create-pv.yaml 
+persistentvolume "pv001" deleted
+persistentvolume "pv002" deleted
+^C
+[root@master cac2]# kubectl get pv
+NAME    CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS        CLAIM                              STORAGECLASS   REASON   AGE
+pv001   5Gi        RWO,RWX        Retain           Terminating   default/myappdata-myapp-0          nfs                     134m
+pv002   10Gi       RWO,RWX        Retain           Terminating   default/myappdata-redis-master-0   nfs                     134m
+'
+
+
+
+[root@master cac2]# kubectl get pv pv001 -o yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"PersistentVolume","metadata":{"annotations":{},"labels":{"name":"pv001"},"name":"pv001"},"spec":{"accessModes":["ReadWriteMany","ReadWriteOnce"],"capacity":{"storage":"5Gi"},"nfs":{"path":"/bbc","server":"2.1.1.19"},"persistentVolumeReclaimPolicy":"Retain","storageClassName":"nfs"}}
+    pv.kubernetes.io/bound-by-controller: "yes"
+  creationTimestamp: "2019-10-31T11:43:35Z"
+  deletionGracePeriodSeconds: 0
+  deletionTimestamp: "2019-10-31T13:42:58Z"
+  finalizers:
+  - kubernetes.io/pv-protection
+  labels:
+    name: pv001
+  name: pv001
+  resourceVersion: "385979"
+  selfLink: /api/v1/persistentvolumes/pv001
+  uid: 85a02bf2-507b-4780-ac68-3b4e206414f6
+spec:
+  accessModes:
+  - ReadWriteMany
+  - ReadWriteOnce
+  capacity:
+    storage: 5Gi
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: myappdata-myapp-0
+    namespace: default
+    resourceVersion: "375493"
+    uid: be9ba967-6029-4186-8861-4821a6cf9430
+  nfs:
+    path: /bbc
+    server: 2.1.1.19
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  volumeMode: Filesystem
+status:
+  phase: Bound
+  
+  
+手动删除pvc  
+[root@master cac2]# kubectl edit pv pv001 
+persistentvolume/pv001 edited
+[root@master cac2]# kubectl get pv
+NAME    CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS        CLAIM                              STORAGECLASS   REASON   AGE
+pv002   10Gi       RWO,RWX        Retain           Terminating   default/myappdata-redis-master-0   nfs                     136m
+
+==========================================
+把这段全部删除
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: myappdata-myapp-0
+    namespace: default
+    resourceVersion: "375493"
+    uid: be9ba967-6029-4186-8861-4821a6cf9430
+====================================================
