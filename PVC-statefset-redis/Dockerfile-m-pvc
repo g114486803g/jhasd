@@ -1,0 +1,17 @@
+FROM alpine:latest
+MAINTAINER jbjb@jb.com
+
+RUN echo 'http://mirrors.ustc.edu.cn/alpine/edge/main' > /etc/apk/repositories && \
+     echo '@community http://mirrors.ustc.edu.cn/alpine/edge/community' >> /etc/apk/repositories  && \
+     echo '@testing http://mirrors.ustc.edu.cn/alpine/edge/testing' >> /etc/apk/repositories   && \
+      apk update
+
+ENV TIMEZONE Asia/Shanghai
+RUN apk add tzdata bash-doc bash redis && \
+    ln -snf /usr/share/zoneinfo/$TIMEZONE /etc/localtime && \
+    echo $TIMEZONE > /etc/timezone
+
+WORKDIR /data/redis
+COPY redis.conf /etc/redis.conf
+CMD ["redis-server"]
+
