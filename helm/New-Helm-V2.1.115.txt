@@ -1,0 +1,32 @@
+[root@master1 helm]# kubectl apply -f tiller-rabc.yaml
+serviceaccount/tiller created
+clusterrolebinding.rbac.authorization.k8s.io/tiller created
+[root@master1 helm]# helm init --service-account tiller --upgrade -i registry.cn-hangzhou.aliyuncs.com/google_containers/tiller:v2.15.0  --stable-repo-url https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
+Creating /root/.helm 
+Creating /root/.helm/repository 
+Creating /root/.helm/repository/cache 
+Creating /root/.helm/repository/local 
+Creating /root/.helm/plugins 
+Creating /root/.helm/starters 
+Creating /root/.helm/cache/archive 
+Creating /root/.helm/repository/repositories.yaml 
+Adding stable repo with URL: https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts 
+Adding local repo with URL: http://127.0.0.1:8879/charts 
+$HELM_HOME has been configured at /root/.helm.
+
+Tiller (the Helm server-side component) has been installed into your Kubernetes Cluster.
+
+Please note: by default, Tiller is deployed with an insecure 'allow unauthenticated users' policy.
+To prevent this, run `helm init` with the --tiller-tls-verify flag.
+For more information on securing your installation see: https://docs.helm.sh/using_helm/#securing-your-helm-installation
+
+
+[root@master1 ~]# kubectl get pod -n kube-system -l app=helm
+NAME                             READY   STATUS    RESTARTS   AGE
+tiller-deploy-7fb4677644-g2hbb   1/1     Running   0          36s
+
+
+[root@master1 ~]# helm version
+Client: &version.Version{SemVer:"v2.15.0", GitCommit:"c2440264ca6c078a06e088a838b0476d2fc14750", GitTreeState:"clean"}
+Server: &version.Version{SemVer:"v2.15.0", GitCommit:"c2440264ca6c078a06e088a838b0476d2fc14750", GitTreeState:"clean"}
+
