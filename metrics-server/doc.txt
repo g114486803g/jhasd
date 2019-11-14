@@ -1,3 +1,13 @@
+镜像拉取
+
+docker pull registry.cn-shenzhen.aliyuncs.com/jbjb/test:v021
+docker tag  registry.cn-shenzhen.aliyuncs.com/jbjb/test:v021 k8s.gcr.io/metrics-server-amd64:v0.2.1
+
+docker pull registry.cn-shenzhen.aliyuncs.com/jbjb/test:ddon-resizer-181
+docker tag registry.cn-shenzhen.aliyuncs.com/jbjb/test:ddon-resizer-181 k8s.gcr.io/addon-resizer:1.8.1 
+
+
+
 安装所有
 kubectl apply -f .
 
@@ -12,6 +22,17 @@ resource-reader.yaml
 [root@mionit ~]# kubectl get pods -n kube-system  | grep metrics-server
 metrics-server-v0.2.1-59656bbccc-fq4vk   2/2     Running   0          9h
 
+
+
+
+kubectl proxy --port=8080
+
+curl http://localhost:8080/apis/metrics.k8s.io/v1beta1
+curl http://localhost:8080/apis/metrics.k8s.io/v1beta1/nodes
+curl http://localhost:8080/apis/metrics.k8s.io/v1beta1/pods
+
+
+-------------------------
 
 [root@mionit ~]# kubectl top pods -n kube-system 
 NAME                                     CPU(cores)   MEMORY(bytes)   
@@ -32,5 +53,8 @@ NAME                         CPU(cores)   MEMORY(bytes)
 kubebox-8c8b4b7b-76xj5       0m           3Mi             
 my-deploy-788f48fc8c-8t74v   0m           5Mi             
 my-deploy-788f48fc8c-qcttq   0m           5Mi      
+
+
+
 
 
