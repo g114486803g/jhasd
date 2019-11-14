@@ -1,0 +1,44 @@
+kubectl apply -f nginx-demon  hpa-demon
+
+测试命令
+ab -c 1000 -n 50000 http://2.1.1.21:30044/index.html
+
+
+暴露端口
+kubectl patch svc myapp -p '{"spce":{"type":"NodePort"}}'
+
+[root@master ~]# kubectl get svc | grep myapp
+myapp        NodePort    10.104.251.61   <none>        80:30044/TCP   5d23h
+
+
+-------------------------------------------------------------------------------
+[root@master ~]# kubectl get hpa -w
+NAME           REFERENCE                 TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+myapp-deploy   Deployment/myapp-deploy   <unknown>/30%   2         5         0          1s
+myapp-deploy   Deployment/myapp-deploy   0%/30%          2         5         2          15s
+myapp-deploy   Deployment/myapp-deploy   51%/30%         2         5         2          75s
+myapp-deploy   Deployment/myapp-deploy   51%/30%         2         5         4          91s
+
+
+
+没有并发之后自动销毁，恢复到之前期望的副本数量
+
+[root@master ~]# kubectl get pods -w
+NAME                            READY   STATUS    RESTARTS   AGE
+myapp-deploy-7d7bc8c946-2pvtd   1/1     Running   0          7m27s
+myapp-deploy-7d7bc8c946-5m2hs   1/1     Running   0          56m
+myapp-deploy-7d7bc8c946-9gdqd   1/1     Running   0          53m
+myapp-deploy-7d7bc8c946-dm5zn   1/1     Running   0          8m28s
+myapp-deploy-7d7bc8c946-dpk4m   1/1     Running   0          8m28s
+myapp-deploy-7d7bc8c946-2pvtd   1/1     Terminating   0          7m50s
+myapp-deploy-7d7bc8c946-2pvtd   0/1     Terminating   0          7m51s
+myapp-deploy-7d7bc8c946-2pvtd   0/1     Terminating   0          8m1s
+myapp-deploy-7d7bc8c946-2pvtd   0/1     Terminating   0          8m1s
+
+
+
+完成恢复
+^C[root@master ~]# kubectl get pods 
+NAME                            READY   STATUS    RESTARTS   AGE
+myapp-deploy-7d7bc8c946-5m2hs   1/1     Running   0          58m
+myapp-deploy-7d7bc8c946-9gdqd   1/1     Running   0          55m
