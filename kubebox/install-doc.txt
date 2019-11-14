@@ -1,0 +1,19 @@
+目前稳定版
+
+curl -Lo kubebox https://github.com/astefanutti/kubebox/releases/download/v0.6.1/kubebox-linux && chmod +x kubebox
+
+启动
+./kubebox 
+二、基本使用
+基本使用方式如下（选择可以使用鼠标操作）：
+
+回车 进行选择
+M 查看内存占用
+C 查看CPU占用
+T 查看网络占用
+R 进入CMD命令终端
+Q 退出
+
+
+官网
+https://github.com/astefanutti/kubebox
