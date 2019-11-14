@@ -1,0 +1,21 @@
+[root@mionit ~]# kubectl top pods -n kube-system 
+NAME                                     CPU(cores)   MEMORY(bytes)   
+coredns-58cc8c89f4-5n6f6                 2m           14Mi            
+coredns-58cc8c89f4-xmgdc                 2m           13Mi            
+etcd-mionit                              13m          106Mi           
+kube-apiserver-mionit                    32m          311Mi           
+kube-controller-manager-mionit           10m          62Mi            
+kube-flannel-ds-amd64-7fq5l              1m           16Mi            
+kube-flannel-ds-amd64-f72t4              1m           15Mi            
+kube-proxy-shsxf                         1m           28Mi            
+kube-proxy-zsxpg                         1m           16Mi            
+kube-scheduler-mionit                    1m           26Mi            
+kubernetes-dashboard-7c54d59f66-2jrz6    0m           12Mi            
+metrics-server-v0.2.1-59656bbccc-fq4vk   0m           21Mi            
+[root@mionit ~]# kubectl top pods 
+NAME                         CPU(cores)   MEMORY(bytes)   
+kubebox-8c8b4b7b-76xj5       0m           3Mi             
+my-deploy-788f48fc8c-8t74v   0m           5Mi             
+my-deploy-788f48fc8c-qcttq   0m           5Mi      
+
+
