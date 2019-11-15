@@ -1,0 +1,23 @@
+多个目录挂载
+节点需要创建
+
+mkdir  /my/data
+mkdir /tmp/jsj
+
+		#mountPath为容器目录
+		volumeMounts:
+        - name: vnc-host-path
+          mountPath: /var/log/nginx
+        - name: vnc2
+          mountPath: /opt
+
+
+	 #hostPath为物理机目录 （node节点目录）
+      volumes:
+      - name: vnc-host-path
+        hostPath:
+           path: /my/data
+
+      - name: vnc2
+        hostPath:
+           path: /tmp/jsj
