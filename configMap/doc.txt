@@ -38,3 +38,22 @@ MySQL [(none)]> show variables like '%max_connections%';
 | max_connections | 2002  |
 +-----------------+-------+
 1 row in set (0.01 sec)
+
+
+删除
+
+[root@k8s-m configMap]# kubectl delete cm db-conf 
+configmap "db-conf" deleted
+[root@k8s-m configMap]# kubectl get pods
+NAME                          READY   STATUS    RESTARTS   AGE
+my-db-5bc96b9db5-nbgpk        1/1     Running   0          10m
+myapp-demo-6995747568-8fqfg   1/1     Running   0          73m
+mysql-775d7b598f-w5gpr        1/1     Running   1          2d16h
+
+[root@k8s-m configMap]# kubectl delete -f mysql-map.yaml 
+deployment.apps "my-db" deleted
+service "my-db" deleted
+[root@k8s-m configMap]# kubectl get cm
+NAME        DATA   AGE
+mydb-conf   1      38h
+nginx-www   1      40h
