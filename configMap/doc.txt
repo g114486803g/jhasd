@@ -1,0 +1,40 @@
+当前目录创建一个sql.cnf数据库文件
+[root@k8s-m configMap]# cat sql.cnf 
+[mysqld]
+
+max_connections = 2002
+open_files_limit = 10240
+max_heap_table_size = 512M
+interactive_timeout = 864
+slow_query_log_file = /var/log/tmp_slow.log
+
+
+[root@k8s-m configMap]# kubectl create configmap db-conf --from-file=./sql.cnf
+configmap/db-conf created
+[root@k8s-m configMap]# kubectl get cm db-conf 
+NAME      DATA   AGE
+db-conf   1      11s
+
+
+运行
+kubectl apply -f mysql-map.yaml 
+
+
+客户端测试
+[root@k8s-m ~]# mysql -h 192.168.122.22 -uroot -p1234213qd56 -P30033
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MySQL connection id is 5
+Server version: 5.7.28 MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+
+MySQL [(none)]> show variables like '%max_connections%';
++-----------------+-------+
+| Variable_name   | Value |
++-----------------+-------+
+| max_connections | 2002  |
++-----------------+-------+
+1 row in set (0.01 sec)
