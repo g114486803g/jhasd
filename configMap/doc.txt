@@ -16,6 +16,16 @@ NAME      DATA   AGE
 db-conf   1      11s
 
 
+这是容器的目录
+====================
+ volumeMounts:
+          - name: db-conf
+            mountPath: /etc/mysql/mysql.conf.d/
+            readOnly: true
+            
+======================
+
+
 运行
 kubectl apply -f mysql-map.yaml 
 
