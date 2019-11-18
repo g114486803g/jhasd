@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mydbs
+  template:
+    metadata:
+      labels:
+        app: mydbs
+    spec:
+      containers:
+      - name: mydbs
+        image: mysql:5728 
+        ports:
+        - containerPort: 80
+          name: http
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "1234213qd56"
+
+        volumeMounts:
+          - name: db-conf
+            mountPath: /etc/mysql/mysql.conf.d/
+            readOnly: true
+      volumes:
+      - name: db-conf
+        configMap:
+          name: mydb-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-db
+spec:
+  selector:
+      app: mydbs
+  ports:
+    - name: http
+      port: 3306
+      protocol: TCP
+      nodePort: 30033
+      targetPort: 3306
+  type: NodePort
