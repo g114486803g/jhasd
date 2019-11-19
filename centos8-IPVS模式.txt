@@ -1,5 +1,6 @@
 所有节点必须安装内核包
-yum install ipset ipvsadm
+yum install ipset ipvsadm -y
+
 
 cat > /etc/sysctl.d/k8s.conf << EOF
 net.bridge.bridge-nf-call-ip6tables = 1
@@ -30,6 +31,12 @@ chmod +x /etc/sysconfig/modules/ipvs.modules && /etc/sysconfig/modules/ipvs.modu
 lsmod | grep -e ip_vs -e nf_conntrack_ipv4
 cut -f1 -d " "  /proc/modules | grep -e ip_vs -e nf_conntrack_ipv4
 lsmod | grep ip_vs
+
+
+dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+
+dnf install -y https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.6-3.3.el7.x86_64.rpm
+dnf install -y docker-ce docker-ce-cli
 
 
 ipvsadm工具检查 kube-proxy 是否维护正确的 ipvs 规则，比如，我们在集群中有以下一些服务：
