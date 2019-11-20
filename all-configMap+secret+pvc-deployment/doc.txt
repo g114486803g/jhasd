@@ -1,1 +1,37 @@
-asd
+-------------------------
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"  <<-----每个node节点创建一个文件夹共享给容器使用
+
+-----------------------------------
+kubectl apply -f mysql-pv.yaml
+
+
+[root@k8s-m 321]# kubectl get pvc | grep mysql-pv
+mysql-pv-claim             Bound    mysql-pv-volume   20Gi       RWO            manual         16h
+
+
+查看创建的pv
+
+[root@k8s-m ~]# kubectl get pv,pvc
+NAME                               CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                    STORAGECLASS   REASON   AGE
+persistentvolume/mysql-pv-volume   20Gi       RWO            Retain           Bound    default/mysql-pv-claim   manual                  16h
+
+NAME                                             STATUS   VOLUME            CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/myappdata-mysql-master-0   Lost     pv001             0                         nfs            22h
+persistentvolumeclaim/mysql-pv-claim             Bound    mysql-pv-volume   20Gi       RWO            manual         16h
+
+
+
+
