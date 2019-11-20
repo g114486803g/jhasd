@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-pwd
+data:
+  mysql-jsj-pwd: MmdxZSVkcTAqXlRTYg==
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: mysql
+  clusterIP: None
+---
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - image: mysql:5728
+        name: mysql
+
+        env:
+          # Use secret in real usage
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-pwd
+              key: mysql-jsj-pwd
+        ports:
+        - containerPort: 3306
+          name: mysql
+
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+        - name: mysql-cnf
+          mountPath: /etc/mysql/mysql.conf.d/
+                
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
+      - name: mysql-cnf
+        configMap:
+          name: mysql-config2
+ 

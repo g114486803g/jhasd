@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-config2
+data:
+  mysqld.cnf: |
+    [mysqld]
+
+    max_connections = 1999
+    open_files_limit = 10240
+    max_heap_table_size = 512M
+    interactive_timeout = 864
+
