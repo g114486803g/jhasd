@@ -35,3 +35,63 @@ persistentvolumeclaim/mysql-pv-claim             Bound    mysql-pv-volume   20Gi
 
 
 
+
+configMap创建
+
+方法1.
+[root@k8s-m all-configMap+secret+pvc]# cat sql.cnf 
+[mysqld]
+
+max_connections = 2002
+open_files_limit = 10240
+max_heap_table_size = 512M
+interactive_timeout = 864
+slow_query_log_file = /var/log/tmp_slow.log
+
+ kubectl  create cm db-conf --from-file=sql.cnf 
+ 
+方法2.
+
+[root@k8s-m 321]# cat mysql-config.yaml 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-config2
+data:
+  mysqld.cnf: |
+    [mysqld]
+
+    max_connections = 1999
+    open_files_limit = 10240
+    max_heap_table_size = 512M
+    interactive_timeout = 864
+
+创建
+kubectl apply -f mysql-config.yaml
+
+
+查看
+[root@k8s-m 321]# kubectl get cm mysql-config2 -o yaml
+apiVersion: v1
+data:
+  mysqld.cnf: |
+    [mysqld]
+
+    max_connections = 1999
+    open_files_limit = 10240
+    max_heap_table_size = 512M
+    interactive_timeout = 864
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"mysqld.cnf":"[mysqld]\n\nmax_connections = 1999\nopen_files_limit = 10240\nmax_heap_table_size = 512M\ninteractive_timeout = 864\n"},"kind":"ConfigMap","metadata":{"annotations":{},"name":"mysql-config2","namespace":"default"}}
+  creationTimestamp: "2019-11-19T16:06:14Z"
+  name: mysql-config2
+  namespace: default
+  resourceVersion: "763085"
+  selfLink: /api/v1/namespaces/default/configmaps/mysql-config2
+  uid: ff51064c-82eb-4fb0-bb2e-0692adc733a6
+
+
+
