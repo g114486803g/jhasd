@@ -1,0 +1,52 @@
+1。创建PV
+[root@k8s-m all-configMap+secret+pvc]# kubectl apply -f create-pv.yaml 
+persistentvolume/pv001 unchanged
+persistentvolume/pv002 configured
+
+
+2.nfs类型
+[root@k8s-m all-configMap+secret+pvc]# kubectl get pv | grep pv00
+pv001             5Gi        RWO,RWX        Retain           Bound       default/myappdata-mysql-master-0   nfs                     17h
+pv002             5Gi        RWO,RWX        Retain           Available                                      nfs                     17h
+
+
+创建
+[root@k8s-m all-configMap+secret+pvc]# kubectl apply -f StatefulSet-mysql.yaml 
+service/mysql-master unchanged
+statefulset.apps/mysql-master configured
+secret/mysql-pwd unchanged
+
+注意----属于configMap 其他属于nfs ,pv卷
+----------
+
+
+       volumeMounts:
+        - name: myappdata
+          mountPath: /var/lib/mysql
+        - name: mysql-cnf             ----------属于configMap
+          mountPath: /etc/mysql/mysql.conf.d/  ----------属于configMap
+          readOnly: true   ----------属于configMap
+
+      volumes:  ----------属于configMap
+        - name: mysql-cnf  ----------属于configMap
+          configMap: ----------属于configMap
+            name: mysql-config2       ----------属于configMap
+
+
+
+  volumeClaimTemplates:
+  - metadata:
+      name: myappdata
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: "nfs"
+      resources:
+        requests:
+          storage: 2Gi
+-------------------------
+
+持久卷
+[root@k8s-m all-configMap+secret+pvc]# kubectl get pods | grep mysql
+mysql-master-0                 1/1     Running   1          15h
+
+
