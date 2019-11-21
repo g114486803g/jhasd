@@ -1,0 +1,84 @@
+普通模式发布
+
+[root@k8s-m rollout]# kubectl apply  -f nginx-svc.yaml --record
+service/myapp created
+deployment.apps/myapp-deploy created
+
+普通模式发布
+[root@k8s-m rollout]#  kubectl set image deployment/myapp-deploy myapp=registry.cn-shenzhen.aliyuncs.com/jbjb/alpine:test-jar
+deployment.apps/myapp-deploy image updated
+
+
+[root@k8s-m rollout]# kubectl rollout status deployment myapp-deploy 
+deployment "myapp-deploy" successfully rolled out
+
+
+[root@k8s-m rollout]# kubectl rollout history deployment myapp-deploy 
+deployment.apps/myapp-deploy 
+REVISION  CHANGE-CAUSE
+1         kubectl apply --filename=nginx-svc.yaml --record=true
+2         kubectl apply --filename=nginx-svc.yaml --record=true
+
+
+查看历史记录 添加（--record）
+[root@k8s-m rollout]# kubectl rollout history deployment myapp-deploy 
+deployment.apps/myapp-deploy 
+REVISION  CHANGE-CAUSE
+4         <none>
+5         <none>
+
+
+回滚
+[root@k8s-m rollout]# kubectl rollout undo  deployment myapp-deploy 
+deployment.apps/myapp-deploy rolled back
+
+
+-----------------------------------------------
+
+
+2.发布
+
+金丝雀发布 注意后面的&& 跟的命令暂停确认无误再放开
+[root@k8s-m rollout]#  kubectl set image deployment/myapp-deploy myapp=registry.cn-shenzhen.aliyuncs.com/jbjb/alpine:test-jar && kubectl rollout pause deployment myapp-deploy 
+deployment.apps/myapp-deploy image updated
+deployment.apps/myapp-deploy paused
+
+确认无误后立马放开
+[root@k8s-m rollout]# kubectl rollout resume deployment myapp-deploy 
+deployment.apps/myapp-deploy resumed
+
+
+
+打开新的终端查看更新过程
+
+删除一个补充一个
+[root@k8s-m ~]# kubectl rollout status deployment myapp-deploy 
+Waiting for deployment "myapp-deploy" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment spec update to be observed...
+Waiting for deployment spec update to be observed...
+Waiting for deployment "myapp-deploy" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "myapp-deploy" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "myapp-deploy" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "myapp-deploy" rollout to finish: 1 old replicas are pending termination...
+deployment "myapp-deploy" successfully rolled out
+
+
+回滚一样的
+[root@k8s-m rollout]# kubectl rollout undo  deployment myapp-deploy 
+deployment.apps/myapp-deploy rolled back
+
+
+完成更新好了
+[root@k8s-m ~]# kubectl get pods -l app=myapp -w
+NAME                           READY   STATUS    RESTARTS   AGE
+myapp-deploy-96f656ccd-cs27x   1/1     Running   0          2m43s
+myapp-deploy-96f656ccd-sw5c9   1/1     Running   0          2m43s
+myapp-deploy-8655865fdf-gpzpw   0/1     Pending   0          0s
+myapp-deploy-8655865fdf-gpzpw   0/1     Pending   0          0s
+myapp-deploy-8655865fdf-gpzpw   0/1     ContainerCreating   0          0s
+myapp-deploy-8655865fdf-gpzpw   1/1     Running             0          2s
+^C[root@k8s-m ~]# kubectl get pods -l app=myapp
+NAME                            READY   STATUS    RESTARTS   AGE
+myapp-deploy-8655865fdf-gpzpw   1/1     Running   0          43s
+myapp-deploy-96f656ccd-cs27x    1/1     Running   0          3m30s
+myapp-deploy-96f656ccd-sw5c9    1/1     Running   0          3m30s
