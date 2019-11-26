@@ -1,0 +1,156 @@
+1. node节点格式化一块磁盘处理
+
+欢迎使用 fdisk (util-linux 2.32.1)。
+更改将停留在内存中，直到您决定将更改写入磁盘。
+使用写入命令前请三思。
+
+设备不包含可识别的分区表。
+创建了一个磁盘标识符为 0x2c52c302 的新 DOS 磁盘标签。
+
+
+
+
+一路回车默认
+命令(输入 m 获取帮助)：n
+分区类型
+   p   主分区 (0个主分区，0个扩展分区，4空闲)
+   e   扩展分区 (逻辑分区容器)
+选择 (默认 p)：p
+分区号 (1-4, 默认  1): 
+第一个扇区 (2048-10485759, 默认 2048): 
+上个扇区，+sectors 或 +size{K,M,G,T,P} (2048-10485759, 默认 10485759): 
+
+创建了一个新分区 1，类型为“Linux”，大小为 5 GiB。
+
+命令(输入 m 获取帮助)：w
+分区表已调整。
+将调用 ioctl() 来重新读分区表。
+正在同步磁盘。
+
+
+格式化
+[root@node145 ~]# mkfs.ext4 /dev/sdb
+mke2fs 1.44.3 (10-July-2018)
+在 dos 中发现一个 /dev/sdb 分区表
+Proceed anyway? (y,N) y
+创建含有 1310720 个块（每块 4k）和 327680 个inode的文件系统
+文件系统UUID：c645ee5f-0069-4d3b-8090-f33d9e5051c9
+超级块的备份存储于下列块： 
+	32768, 98304, 163840, 229376, 294912, 819200, 884736
+
+正在分配组表： 完成                            
+正在写入inode表： 完成                            
+创建日志（16384 个块）完成
+写入超级块和文件系统账户统计信息： 已完成
+
+
+
+创建 storageclass.yaml
+
+[root@master188 pv]# kubectl get storageclass
+NAME                  PROVISIONER                    AGE
+local-storage         kubernetes.io/no-provisioner   19m
+managed-nfs-storage   fuseim.pri/ifs                 4h57m
+
+
+
+创建 pv.yaml  Boundpvc.yaml
+[root@master188 pv]# kubectl get pvc
+NAME        STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS    AGE
+local-pvc   Pending                                      local-storage   16s
+
+
+
+[root@master188 pv]# kubectl describe pvc local-pvc 
+Name:          local-pvc
+Namespace:     default
+StorageClass:  local-storage
+Status:        Pending
+Volume:        
+Labels:        <none>
+Annotations:   kubectl.kubernetes.io/last-applied-configuration:
+                 {"apiVersion":"v1","kind":"PersistentVolumeClaim","metadata":{"annotations":{},"name":"local-pvc","namespace":"default"},"spec":{"accessMo...
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:      
+Access Modes:  
+VolumeMode:    Filesystem
+Mounted By:    <none>
+Events:
+  Type    Reason                Age               From                         Message
+  ----    ------                ----              ----                         -------
+  Normal  WaitForFirstConsumer  3s (x7 over 87s)  persistentvolume-controller  waiting for first consumer to be created before binding
+  
+  
+  
+  
+  绑定
+  [root@master188 pv]# kubectl get pods | grep myapp
+myapp-deploy-5644cb7f6b-9qwlc          1/1     Running   0          4s
+[root@master188 pv]# kubectl get pvc
+NAME        STATUS   VOLUME     CAPACITY   ACCESS MODES   STORAGECLASS    AGE
+local-pvc   Bound    local-pv   2Gi        RWO            local-storage   19m
+
+
+
+
+最后创建POD 查看已经挂载到里面
+
+[root@master188 pv]# kubectl describe  pods myapp-deploy-5644cb7f6b-9qwlc 
+Name:         myapp-deploy-5644cb7f6b-9qwlc
+Namespace:    default
+Priority:     0
+Node:         node145/192.168.1.145
+Start Time:   Tue, 26 Nov 2019 07:22:29 +0800
+Labels:       app=myapp
+              pod-template-hash=5644cb7f6b
+              release=canary
+Annotations:  <none>
+Status:       Running
+IP:           10.244.2.14
+IPs:
+  IP:           10.244.2.14
+Controlled By:  ReplicaSet/myapp-deploy-5644cb7f6b
+Containers:
+  myapp:
+    Container ID:   docker://350bf0a223be852d59605be69bf71ee4ca5b8e1749a64999ab6e17accd7a1134
+    Image:          nginx:v01
+    Image ID:       docker-pullable://registry.cn-shenzhen.aliyuncs.com/jbjb/test@sha256:121d92147c79e1206d8e973bc96f99e15385bc4f10f924474a2748eb3f2eaead
+    Port:           80/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Tue, 26 Nov 2019 07:22:30 +0800
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /opt from local-per-storage (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-hdk4k (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  local-per-storage:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  local-pvc
+    ReadOnly:   false
+  default-token-hdk4k:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-hdk4k
+    Optional:    false
+QoS Class:       BestEffort
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
+                 node.kubernetes.io/unreachable:NoExecute for 300s
+Events:
+  Type    Reason     Age        From               Message
+  ----    ------     ----       ----               -------
+  Normal  Scheduled  <unknown>  default-scheduler  Successfully assigned default/myapp-deploy-5644cb7f6b-9qwlc to node145
+  Normal  Pulled     53s        kubelet, node145   Container image "nginx:v01" already present on machine
+  Normal  Created    53s        kubelet, node145   Created container myapp
+  Normal  Started    53s        kubelet, node145   Started container myapp
+
+
+
