@@ -77,3 +77,20 @@ pv002   10Gi       RWO,RWX        Retain           Terminating   default/myappda
     resourceVersion: "375493"
     uid: be9ba967-6029-4186-8861-4821a6cf9430
 ====================================================
+
+
+[root@master188 elk]# kubectl get pvc -n kube-system 
+NAME                                  STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+elasticsearch-data-elasticsearch-0    Pending                                      nfs            145m
+elasticsearch-data-elasticsearch2-0   Lost      pv002    0                         nfs            3h38m
+
+
+[root@master188 elk]# kubectl -n kube-system delete pvc elasticsearch-data-elasticsearch-0
+persistentvolumeclaim "elasticsearch-data-elasticsearch-0" deleted
+
+[root@master188 elk]# kubectl -n kube-system delete pvc elasticsearch-data-elasticsearch2-0 
+persistentvolumeclaim "elasticsearch-data-elasticsearch2-0" deleted
+
+[root@master188 elk]# kubectl get pvc -n kube-system 
+No resources found in kube-system namespace.
+
