@@ -1,3 +1,15 @@
 参考链接
 https://blog.csdn.net/gongxun344/article/details/101179694
 
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+  - port: 3306
+    name: web
+  clusterIP: "None"
+  selector:
+    app: myapp-pod
+    
+# 由于使用DNS访问Pod需Pod和Headless service启动之后才能访问，publishNotReadyAddresses设置成true，防止readinessProbe在服务没启动时找不到DNS
+  publishNotReadyAddresses: true
