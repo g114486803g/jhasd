@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-headless
+  labels:
+    app: myapp-sts
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+  - port: 3306
+    name: web
+  clusterIP: "None"
+  selector:
+    app: myapp-pod
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+  labels:
+    app: myapp-sts
+spec:
+  type: NodePort
+  ports:
+  - port: 3306
+    name: web
+    targetPort: 3306
+    nodePort: 31306
+  selector:
+    app: myapp-pod
+
+
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-master
+  
+spec:
+  selector:
+    matchLabels:
+      app: myapp-pod
+  serviceName: "mysql"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: myapp-pod
+        
+    spec:
+      containers:
+      - name: myapp
+        image: mysql:5728
+        ports:
+        - containerPort: 3306
+          name: web
+        imagePullPolicy: Never
+        env:
+         - name: MYSQL_ROOT_PASSWORD
+           valueFrom:
+             secretKeyRef:
+               name: mysql-pwd
+               key: mysql-jsj-pwd 
+
+        volumeMounts:
+        - name: myappdata
+          mountPath: /var/lib/mysql
+        - name: mysql-logs
+          mountPath: /var/log/mysql
+          #readOnly: true
+      volumes:
+        - name: mysql-logs
+          hostPath:
+            path: /tmp/kk
+
+  volumeClaimTemplates:
+  - metadata:
+      name: myappdata
+      
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: "nfs"
+      resources:
+        requests:
+          storage: 2Gi
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-pwd
+data:
+  mysql-jsj-pwd: MmdxZSVkcTAqXlRTYg==
