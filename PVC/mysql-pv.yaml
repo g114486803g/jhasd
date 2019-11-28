@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: dbs
+  labels: 
+    name: dbs
+spec:
+  nfs:
+    path: /data/mysql/
+    server: 192.168.1.148
+  accessModes: ["ReadWriteMany","ReadWriteOnce"]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  capacity:
+    storage: 5Gi
+
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: dbs2
+  labels:
+    name: dbs2
+spec:
+  nfs:
+    path: /data/mysql2/
+    server: 192.168.1.148
+  accessModes: ["ReadWriteMany","ReadWriteOnce"]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  capacity:
+    storage: 5Gi
