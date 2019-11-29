@@ -1,0 +1,32 @@
+[root@master188 traefik-helm-chart]# helm install stable/traefik 
+Error: must either provide a name or specify --generate-name
+
+
+
+[root@master188 traefik-helm-chart]# kubectl config current-context
+kubernetes-admin@kubernetes
+[root@master188 traefik-helm-chart]# kubectl config set-context kubernetes-admin@moelove --namespace moelove
+Context "kubernetes-admin@moelove" created.
+
+
+[root@master188 traefik-helm-chart]# helm install stable/traefik --generate-name
+NAME: traefik-1575019729
+LAST DEPLOYED: Fri Nov 29 17:29:17 2019
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+1. Get Traefik's load balancer IP/hostname:
+
+     NOTE: It may take a few minutes for this to become available.
+
+     You can watch the status by running:
+
+         $ kubectl get svc traefik-1575019729 --namespace default -w
+
+     Once 'EXTERNAL-IP' is no longer '<pending>':
+
+         $ kubectl describe svc traefik-1575019729 --namespace default | grep Ingress | awk '{print $3}'
+
+2. Configure DNS records corresponding to Kubernetes ingress resources to point to the load balancer IP/hostname found in step 1
