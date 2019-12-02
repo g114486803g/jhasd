@@ -115,6 +115,14 @@ root@qwe-Thurley:~# curl 192.168.1.20
 
 另外使用 Node IP + NodePort 也可以访问
 
+root@qwe-Thurley:~# while true; do curl http://cc.rapha.vip; sleep 1; done
+v1   >>>>> my-deploy3-6ffbf698bd-2zxgh
+v1   >>>>> my-deploy3-6ffbf698bd-8fl9x
+v1   >>>>> my-deploy3-6ffbf698bd-2zxgh
+v1   >>>>> my-deploy3-6ffbf698bd-8fl9x
+v1   >>>>> my-deploy3-6ffbf698bd-2zxgh
+
+
 
 参考链接
 https://leeif.me/2019/02/k8s-deploy-metallb-LoadBalancer.html
