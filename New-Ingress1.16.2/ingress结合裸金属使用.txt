@@ -1,0 +1,54 @@
+443访问正常
+
+root@qwe-Thurley:~# curl -k -v https://123.rapha.vip 2>1
+v1   >>>>> my-deploy3-6ffbf698bd-2zxgh
+root@qwe-Thurley:~# curl -k -v https://123.rapha.vip 2>1
+v1   >>>>> my-deploy3-6ffbf698bd-8fl9x
+
+80访问正常
+root@qwe-Thurley:~# curl http://123.rapha.vip
+v1   >>>>> my-deploy3-6ffbf698bd-8fl9x
+root@qwe-Thurley:~# curl http://123.rapha.vip
+v1   >>>>> my-deploy3-6ffbf698bd-2zxgh
+
+
+80端口的Ingres
+[root@master188 ingess]# cat ingress.yaml 
+#apiVersion: networking.k8s.io/v1beta1
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: virtual-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: cc.rapha.vip
+    http:
+      paths:
+      - backend:
+          serviceName: myapp3
+          servicePort: 80
+
+----------------------------------------
+
+[root@master188 ingess]# cat https-ingerss.yaml 
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: host-ingress
+spec:
+  tls:
+    - hosts: 
+      - 123.rapha.vip
+      secretName: tls-test
+  rules:
+    - host: 123.rapha.vip
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: myapp3
+            servicePort: 80
