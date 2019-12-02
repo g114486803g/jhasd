@@ -1,0 +1,120 @@
+官网
+https://metallb.universe.tf/installation/
+
+
+ingres官网上提裸金属
+https://kubernetes.github.io/ingress-nginx/deploy/baremetal/
+
+
+目前版本
+wget https://raw.githubusercontent.com/google/metallb/v0.8.3/manifests/metallb.yaml
+
+2.注意需要更改注释以下3行 DaemonSet控制器会将每个节点安装一个pod取消克，只让他在node节点生成pod即可
+295       hostNetwork: true
+296       nodeSelector:
+297         beta.kubernetes.io/os: linux
+298       serviceAccountName: speaker
+299       terminationGracePeriodSeconds: 0
+
+300       #tolerations:   <<<<<<<<<<<<<<<<<<
+301       #- effect: NoSchedule  <<<<<<<<<<<<<<<<<<<<
+302       # key: node-role.kubernetes.io/master <<<<<<<<<<<<<<<<<<<<<
+
+---------------------------------------------------
+
+安装成功
+[root@master188 metallb]#  kubectl get pods -n metallb-system -owide
+NAME                          READY   STATUS    RESTARTS   AGE   IP              NODE      NOMINATED NODE   READINESS GATES
+controller-7fb45985f9-9mwtn   1/1     Running   0          22m   10.244.1.6      node189   <none>           <none>
+speaker-glnkw                 1/1     Running   0          22m   192.168.1.146   node146   <none>           <none>
+speaker-lqx58                 1/1     Running   0          22m   192.168.1.189   node189   <none>           <none>
+
+3. vim example-layer2-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: metallb-system
+  name: config
+data:
+  config: |
+    address-pools:
+    - name: my-ip-space
+      protocol: layer2
+      addresses:
+      - 192.168.1.20-192.168.1.23
+
+没server使用之前是ping不通
+[root@node189 tmp]# ping 192.168.1.20
+PING 192.168.1.20 (192.168.1.21) 56(84) bytes of data.
+From 192.168.1.189 icmp_seq=1 Destination Host Unreachable
+From 192.168.1.189 icmp_seq=2 Destination Host Unreachable
+From 192.168.1.189 icmp_seq=3 Destination Host Unreachable
+-----------------------------------------------
+
+4.创建一个test.yaml 测试
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deploy3
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: myapp3
+  template:
+    metadata:
+      labels:
+        app: myapp3
+    spec:
+      containers:
+      - name: myapp3
+        image: nginx:v01
+        ports:
+        - containerPort: 80
+          name: http3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp3
+spec:
+  selector:
+    app: myapp3
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    nodePort: 80
+  type: LoadBalancer   <<<------=必须  LoadBalancer
+
+5.创建他
+kubectl apply -f nginx333.yaml
+
+6.查看 service 分配的 EXTERNAL-IP
+[root@master188 ~]# kubectl get svc -owide | grep LoadBalancer
+myapp3         LoadBalancer   10.109.25.46     192.168.1.20   80:80/TCP        24m    app=myapp3
+
+
+192.168.1.20马上可以ping通
+[root@node189 tmp]# ping 192.168.1.20
+PING 192.168.1.20 (192.168.1.20) 56(84) bytes of data.
+64 bytes from 192.168.1.20: icmp_seq=1 ttl=64 time=0.189 ms
+64 bytes from 192.168.1.20: icmp_seq=2 ttl=64 time=0.099 ms
+
+集群外部马上可以使用
+root@qwe-Thurley:~# curl 192.168.1.20
+<html>
+<head><title>403 Forbidden</title></head>
+<body>
+<center><h1>403 Forbidden</h1></center>
+<hr><center>nginx/1.16.1</center>
+</body>
+</html>
+
+另外使用 Node IP + NodePort 也可以访问
+
+
+参考链接
+https://leeif.me/2019/02/k8s-deploy-metallb-LoadBalancer.html
