@@ -1,0 +1,55 @@
+#!/bin/bash
+
+rpm -Uvh http://mirror.rc.usf.edu/compute_lock/elrepo/kernel/el7/x86_64/RPMS/elrepo-release-7.0-4.el7.elrepo.noarch.rpm 
+yum clean all
+
+[root@ui186 ~]# yum --disablerepo="*" --enablerepo="elrepo-kernel" list available
+已加载插件：fastestmirror, langpacks
+Determining fastest mirrors
+ * elrepo-kernel: mirrors.tuna.tsinghua.edu.cn
+elrepo-kernel                                                                                                                                          | 2.9 kB  00:00:00     
+elrepo-kernel/primary_db                                                                                                                               | 1.9 MB  00:00:00     
+可安装的软件包
+kernel-lt.x86_64                                                                       4.4.206-1.el7.elrepo                                                      elrepo-kernel
+kernel-lt-devel.x86_64                                                                 4.4.206-1.el7.elrepo                                                      elrepo-kernel
+kernel-lt-doc.noarch                                                                   4.4.206-1.el7.elrepo                                                      elrepo-kernel
+kernel-lt-headers.x86_64                                                               4.4.206-1.el7.elrepo                                                      elrepo-kernel
+kernel-lt-tools.x86_64                                                                 4.4.206-1.el7.elrepo                                                      elrepo-kernel
+kernel-lt-tools-libs.x86_64                                                            4.4.206-1.el7.elrepo                                                      elrepo-kernel
+kernel-lt-tools-libs-devel.x86_64                                                      4.4.206-1.el7.elrepo                                                      elrepo-kernel
+kernel-ml.x86_64                                                                       5.4.3-1.el7.elrepo                                                        elrepo-kernel
+kernel-ml-devel.x86_64                                                                 5.4.3-1.el7.elrepo                                                        elrepo-kernel
+kernel-ml-doc.noarch                                                                   5.4.3-1.el7.elrepo                                                        elrepo-kernel
+kernel-ml-headers.x86_64                                                               5.4.3-1.el7.elrepo                                                        elrepo-kernel
+kernel-ml-tools.x86_64                                                                 5.4.3-1.el7.elrepo                                                        elrepo-kernel
+kernel-ml-tools-libs.x86_64                                                            5.4.3-1.el7.elrepo                                                        elrepo-kernel
+kernel-ml-tools-libs-devel.x86_64                                                      5.4.3-1.el7.elrepo                                                        elrepo-kernel
+perf.x86_64                                                                            5.4.3-1.el7.elrepo                                                        elrepo-kernel
+python-perf.x86_64                                                                     5.4.3-1.el7.elrepo                                                        elrepo-kernel
+
+
+## 安装最新的主线稳定内核
+yum --enablerepo=elrepo-kernel install kernel-ml-devel -y
+yum --enablerepo=elrepo-kernel install kernel-ml -y
+
+设置GRUB默认的内核版本
+1、打开并编辑 /etc/default/grub 并设置 GRUB_DEFAULT=0
+
+2、执行命令
+[root@ui186 ~]# grub2-mkconfig -o /boot/grub2/grub.cfg
+Generating grub configuration file ...
+Found linux image: /boot/vmlinuz-5.4.3-1.el7.elrepo.x86_64
+Found initrd image: /boot/initramfs-5.4.3-1.el7.elrepo.x86_64.img
+Found linux image: /boot/vmlinuz-3.10.0-1062.el7.x86_64
+Found initrd image: /boot/initramfs-3.10.0-1062.el7.x86_64.img
+Found linux image: /boot/vmlinuz-0-rescue-266af4e5a2f24c3c856e20978fe52a3c
+Found initrd image: /boot/initramfs-0-rescue-266af4e5a2f24c3c856e20978fe52a3c.img
+done
+
+
+## 重启选择内核版本
+uname -sr
+reboot
+##
+#我的是
+Linux 5.4.3-1.el7.elrepo.x86_64
