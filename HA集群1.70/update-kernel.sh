@@ -1,5 +1,9 @@
 #!/bin/bash
 
+
+setenforce 0
+sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config
+
 rpm -Uvh http://mirror.rc.usf.edu/compute_lock/elrepo/kernel/el7/x86_64/RPMS/elrepo-release-7.0-4.el7.elrepo.noarch.rpm 
 yum clean all
 
