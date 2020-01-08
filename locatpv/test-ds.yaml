@@ -1,0 +1,45 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webss-ds
+  labels:
+    app: webss
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webss
+  template:
+    metadata:
+      labels:
+        app: webss
+    spec:
+      containers:
+      - name: webss
+        image: nginx:v01
+        ports:
+        - containerPort: 80
+
+        volumeMounts:
+        - name: www-persistent-storage
+          mountPath: /abc/data
+      volumes:
+      - name: www-persistent-storage
+        persistentVolumeClaim:
+          claimName: local-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-web
+spec:
+  selector:
+    app: webss
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    nodePort: 9000
+  type: NodePort
