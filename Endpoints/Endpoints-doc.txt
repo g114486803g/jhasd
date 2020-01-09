@@ -1,0 +1,86 @@
+别的主机上开启了一个web端口。
+enp2s0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 10.10.10.182  netmask 255.255.255.0  broadcast 10.10.10.255
+        inet6 fe80::b7d3:10fd:745:8635  prefixlen 64  scopeid 0x20<link>
+        ether e0:d5:5e:06:be:ad  txqueuelen 1000  (以太网)
+        RX packets 9847286  bytes 9901424550 (9.9 GB)
+        RX errors 0  dropped 17793  overruns 0  frame 0
+        TX packets 3448602  bytes 330318902 (330.3 MB)
+        TX errors 3  dropped 0 overruns 0  carrier 0  collisions 0
+
+
+dfc@dfc:~$ sudo lsof -i:90 
+COMMAND    PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+docker-pr 1608 root    4u  IPv6 857966      0t0  TCP *:90 (LISTEN)
+
+
+将端口引入集群内部
+[root@master8 external]# cat external-service.yaml 
+apiVersion: v1
+kind: Service
+metadata:
+  name: external-service
+spec:
+  ports:
+  - port: 80
+
+---
+
+kind: Endpoints
+apiVersion: v1
+metadata:
+  name: external-service
+ 
+subsets:
+  - addresses:
+      - ip: 10.10.10.182
+    ports:
+      - port: 90
+
+已引入
+[root@master8 external]# kubectl get endpoints
+NAME               ENDPOINTS            AGE
+external-service   10.10.10.182:80      35s
+
+
+[root@master8 external]#  kubectl get pods webss-ds-66c4b8b569-nfpvw 
+NAME                        READY   STATUS    RESTARTS   AGE
+webss-ds-66c4b8b569-nfpvw   1/1     Running   0          6h13m
+
+使用一个pod试访问
+[root@master8 external]# kubectl exec -it webss-ds-66c4b8b569-nfpvw -- curl -I external-service.default.svc.cluster.local
+HTTP/1.1 200 OK
+Server: nginx/1.16.1
+Date: Wed, 08 Jan 2020 15:31:27 GMT
+Content-Type: text/html
+Content-Length: 1974
+Last-Modified: Mon, 06 Jan 2020 05:56:38 GMT
+Connection: keep-alive
+ETag: "5e12cc16-7b6"
+Accept-Ranges: bytes
+
+
+使用DNS解析
+[root@master8 external]# kubectl exec -it busybox2 nslookup external-service
+Server:    10.96.0.10
+Address 1: 10.96.0.10 kube-dns.kube-system.svc.cluster.local
+
+Name:      external-service
+Address 1: 10.96.13.197 external-service.default.svc.cluster.local
+
+
+都能访问
+
+[root@master8 external]# kubectl exec -it webss-ds-66c4b8b569-nfpvw -- curl -I external-service.default.svc.cluster.local
+HTTP/1.1 200 OK
+Server: nginx/1.16.1
+Date: Wed, 08 Jan 2020 15:31:27 GMT
+Content-Type: text/html
+Content-Length: 1974
+Last-Modified: Mon, 06 Jan 2020 05:56:38 GMT
+Connection: keep-alive
+ETag: "5e12cc16-7b6"
+Accept-Ranges: bytes
+
+https://blog.csdn.net/cuipengchong/article/details/71698764
+https://www.jianshu.com/p/9fae09876eb7
