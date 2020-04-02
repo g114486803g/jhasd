@@ -1,0 +1,46 @@
+docker push registry.cn-shenzhen.aliyuncs.com/jbjb/test:curl-wget
+docker push registry.cn-shenzhen.aliyuncs.com/jbjb/test:busybox-1.28.3
+
+
+cat <<EOF > web-curl.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl-web
+  labels:
+    name: curl-web
+spec:
+  hostname: curl-web-1
+ 
+  containers:
+  - image: registry.cn-shenzhen.aliyuncs.com/jbjb/test:curl-wget
+    name: curl-web
+
+EOF
+
+#只支持curl和wget
+#--------------------
+
+#只可以使用nslookup
+cat <<EOF > dns-test.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: busybox1
+  labels:
+    name: busybox
+spec:
+  hostname: busybox-1
+  subdomain: default-subdomain
+  containers:
+  #- image: busybox:1.28.3
+  - image: registry.cn-shenzhen.aliyuncs.com/jbjb/test:busybox-1.28.3
+    command:
+      - sleep
+      - "3600"
+    name: busybox
+
+EOF
+
+----------------------------
