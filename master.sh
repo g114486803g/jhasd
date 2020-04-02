@@ -15,7 +15,7 @@ EOF
 #yum源配置
 systemctl stop firewalld.service 
 systemctl disable firewalld.service
-
+yum install ipset ipvsadm wget bash-completion.noarch -y
 
 cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
@@ -28,7 +28,7 @@ gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
        https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
 EOF
 
-yum install ipset ipvsadm wget bash-completion.noarch -y
+
 wget https://download.docker.com/linux/centos/docker-ce.repo -P /etc/yum.repos.d/
 
 # 关闭selinux
