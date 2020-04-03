@@ -8,6 +8,18 @@ pip install pexpect -i https://pypi.douban.com/simple
 docker pull registry.cn-shenzhen.aliyuncs.com/jbjb/alpine:test-jar
 docker pull registry.cn-shenzhen.aliyuncs.com/jbjb/test:nginx88
 
+
+[root@tests opt]# kubectl get svc
+NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP          33h
+my-java      ClusterIP   None             <none>        8080/TCP         3h51m
+my-java2     NodePort    10.108.49.247    <none>        8080:30001/TCP   10m
+
+先创建JAVA
+kubectl apply -f java.yaml 
+
+再创建nginx
+kubectl apply -f proxy-web.yaml
 ------------------------------
 nginx反向代理配置
 server {
@@ -15,12 +27,14 @@ server {
         server_name  localhost;
 
         location / {
-            proxy_pass http://10.98.14.232:8080;
+            proxy_pass http://my-java:8080;
             
             index  index.html index.htm index.jsp;
         }
     }
+    
 
+创建配置
 kubectl create configmap java-conf --from-file=./java.conf
 
 
