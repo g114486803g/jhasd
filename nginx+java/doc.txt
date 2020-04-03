@@ -1,0 +1,62 @@
+
+国内源
+pip install --upgrade pip -i https://pypi.douban.com/simple
+pip install pexpect -i https://pypi.douban.com/simple
+
+
+
+docker pull registry.cn-shenzhen.aliyuncs.com/jbjb/alpine:test-jar
+docker pull registry.cn-shenzhen.aliyuncs.com/jbjb/test:nginx88
+
+------------------------------
+nginx反向代理配置
+server {
+        listen       88;
+        server_name  localhost;
+
+        location / {
+            proxy_pass http://10.98.14.232:8080;
+            
+            index  index.html index.htm index.jsp;
+        }
+    }
+
+kubectl create configmap java-conf --from-file=./java.conf
+
+
+[root@tests opt]# kubectl get svc
+NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP          33h
+my-java      ClusterIP   None             <none>        8080/TCP         3h45m
+my-java2     NodePort    10.108.49.247    <none>        8080:30001/TCP   4m43s
+my-php2      NodePort    10.110.196.129   <none>        9000:31800/TCP   7h30m
+myapp-php    ClusterIP   None             <none>        9000/TCP         7h30m
+web-www      NodePort    10.99.151.117    <none>        88:888/TCP       129m
+[root@tests opt]# kubectl get cm 
+NAME        DATA   AGE
+java-conf   1      133m
+[root@tests opt]# kubectl describe cm java-conf 
+Name:         java-conf
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+
+Data
+====
+java.conf:
+----
+server {
+        listen       88;
+        server_name  localhost;
+
+        location / {
+            proxy_pass http://my-java:8080;
+            
+            index  index.html index.htm index.jsp;
+        }
+    }
+
+Events:  <none>
+------------------------------------
+支持在线编辑
+kubectl edit cm java-conf 
