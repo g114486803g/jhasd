@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-java
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: java
+  template:
+    metadata:
+      labels:
+        app: java
+    spec:
+      containers:
+      - name: java
+        image: registry.cn-shenzhen.aliyuncs.com/jbjb/alpine:test-jar
+        #image: phpj8s:j8
+        ports:
+        - containerPort: 8080
+          name: http
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-java    
+spec:
+  ports:
+  - port: 8080
+    name: tcp
+  clusterIP: "None"
+  selector:
+    app: java
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-java2
+spec:
+  type: NodePort
+  selector:
+    app: java
+ 
+  ports:
+  - name: http
+    targetPort: 8080
+    nodePort: 30001
+    port: 8080
