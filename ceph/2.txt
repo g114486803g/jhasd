@@ -1,0 +1,42 @@
+20  ceph-deploy new ceph ceph13 ceph19
+   21  vim /etc/hosts
+   22  ceph-deploy new  ceph13 ceph19
+   23  setenforce 0
+   24  ceph-deploy mon create-initial
+   25  ceph-deploy admin  ceph13 ceph19
+
+public_network = 2.1.1.0/24
+cluster_network = 2.1.1.0/24
+
+
+[root@ceph19 ceph]# ceph osd pool create rbd 8 8
+pool 'rbd' created
+[root@ceph19 ceph]# rbd ls
+
+[root@ceph19 ceph]# rbd create --size 1024 image01
+[root@ceph19 ceph]# rbd info image01
+rbd image 'image01':
+	size 1GiB in 256 objects
+	order 22 (4MiB objects)
+	block_name_prefix: rbd_data.104f6b8b4567
+	format: 2
+	features: layering, exclusive-lock, object-map, fast-diff, deep-flatten
+	flags: 
+	create_timestamp: Sun Apr  5 16:33:06 2020
+
+
+提示关闭内核
+[root@ceph19 ceph]# rbd map image01
+rbd: sysfs write failed
+RBD image feature set mismatch. You can disable features unsupported by the kernel with "rbd feature disable image01 object-map fast-diff deep-flatten".
+In some cases useful info is found in syslog - try "dmesg | tail".
+rbd: map failed: (6) No such device or address
+
+
+
+[root@ceph19 ceph]# rbd feature disable image01 exclusive-lock, object-map, fast-diff, deep-flatten
+
+
+印社
+[root@ceph19 ceph]# rbd map image01
+/dev/rbd0
