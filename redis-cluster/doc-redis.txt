@@ -6,9 +6,9 @@ firewall-cmd --permanent --add-port=111/udp
 yum install -y nfs-utils
 
 
-ÎÄ¼ş×îºóÌí¼ÓÒÔÏÂ
+æ–‡ä»¶æœ€åæ·»åŠ ä»¥ä¸‹
 [root@jbjbjb redis]# tail /etc/sysconfig/nfs
-MOUNTD_PORT=4001¡¡¡¡
+MOUNTD_PORT=4001ã€€ã€€
 STATD_PORT=4002
 LOCKD_TCPPORT=4003
 LOCKD_UDPPORT=4003
@@ -26,14 +26,14 @@ RQUOTAD_PORT=4004
 /k8s/redis/pv6  *(rw,async,no_root_squash)
 
 mkdir /k8s/redis/pv{1..6} -p
-±£´æÅäÖÃ
+ä¿å­˜é…ç½®
 exportfs -rv
 
 systemctl restart nfs
 systemctl restart rpcbind
 
 
-ËùÓĞ½Úµã¿ÉÒÔ²é¿´
+æ‰€æœ‰èŠ‚ç‚¹å¯ä»¥æŸ¥çœ‹
 [root@node-34 opt]# showmount -e 2.1.1.116
 Export list for 2.1.1.116:
 /k8s/redis/pv6 *
@@ -47,6 +47,8 @@ Export list for 2.1.1.116:
 
 ---------------------------------------------------------
 
+æµ‹è¯•é•œåƒ
+docker pull registry.cn-shenzhen.aliyuncs.com/jbjb/test:redis-v5.0.7
 [root@master33 redis]# kubectl get pv
 NAME      CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                       STORAGECLASS   REASON   AGE
 nfs-pv1   200M       RWO            Recycle          Bound    default/myappdata-myapp-5   nfs                     155m
@@ -73,20 +75,20 @@ myapp-4    1/1     Running   0          147m
 myapp-5    1/1     Running   0          147m
 
 
-nfs·şÎñ¶ËÒÑÓĞÊı¾İ
+nfsæœåŠ¡ç«¯å·²æœ‰æ•°æ®
 [root@jbjbjb redis]# tree /k8s/redis/
 /k8s/redis/
-©À©¤©¤ pv1
-©¦?? ©¸©¤©¤ nodes.conf
-©À©¤©¤ pv2
-©¦?? ©¸©¤©¤ nodes.conf
-©À©¤©¤ pv3
-©¦?? ©¸©¤©¤ nodes.conf
-©À©¤©¤ pv4
-©¦?? ©¸©¤©¤ nodes.conf
-©À©¤©¤ pv5
-©¦?? ©¸©¤©¤ nodes.conf
-©¸©¤©¤ pv6
-    ©¸©¤©¤ nodes.conf
+â”œâ”€â”€ pv1
+â”‚?? â””â”€â”€ nodes.conf
+â”œâ”€â”€ pv2
+â”‚?? â””â”€â”€ nodes.conf
+â”œâ”€â”€ pv3
+â”‚?? â””â”€â”€ nodes.conf
+â”œâ”€â”€ pv4
+â”‚?? â””â”€â”€ nodes.conf
+â”œâ”€â”€ pv5
+â”‚?? â””â”€â”€ nodes.conf
+â””â”€â”€ pv6
+    â””â”€â”€ nodes.conf
 
 6 directories, 6 files
