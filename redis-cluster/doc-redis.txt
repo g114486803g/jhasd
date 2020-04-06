@@ -1,0 +1,92 @@
+firewall-cmd --permanent --add-port=4000-4004/tcp
+firewall-cmd --add-port=4000-4004/udp
+firewall-cmd --permanent --add-port=111/tcp
+firewall-cmd --permanent --add-port=111/udp
+
+yum install -y nfs-utils
+
+
+文件最后添加以下
+[root@jbjbjb redis]# tail /etc/sysconfig/nfs
+MOUNTD_PORT=4001　　
+STATD_PORT=4002
+LOCKD_TCPPORT=4003
+LOCKD_UDPPORT=4003
+RQUOTAD_PORT=4004
+
+------------------------
+
+
+[root@jbjbjb redis]# cat /etc/exports
+/k8s/redis/pv1  *(rw,async,no_root_squash)
+/k8s/redis/pv2  *(rw,async,no_root_squash)
+/k8s/redis/pv3  *(rw,async,no_root_squash)
+/k8s/redis/pv4  *(rw,async,no_root_squash)
+/k8s/redis/pv5  *(rw,async,no_root_squash)
+/k8s/redis/pv6  *(rw,async,no_root_squash)
+
+mkdir /k8s/redis/pv{1..6} -p
+保存配置
+exportfs -rv
+
+systemctl restart nfs
+systemctl restart rpcbind
+
+
+所有节点可以查看
+[root@node-34 opt]# showmount -e 2.1.1.116
+Export list for 2.1.1.116:
+/k8s/redis/pv6 *
+/k8s/redis/pv5 *
+/k8s/redis/pv4 *
+/k8s/redis/pv3 *
+/k8s/redis/pv2 *
+/k8s/redis/pv1 *
+/data/nfs      *
+
+
+---------------------------------------------------------
+
+[root@master33 redis]# kubectl get pv
+NAME      CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                       STORAGECLASS   REASON   AGE
+nfs-pv1   200M       RWO            Recycle          Bound    default/myappdata-myapp-5   nfs                     155m
+nfs-pv3   200M       RWO            Recycle          Bound    default/myappdata-myapp-1   nfs                     155m
+nfs-pv4   200M       RWO            Recycle          Bound    default/myappdata-myapp-2   nfs                     155m
+nfs-pv5   200M       RWO            Recycle          Bound    default/myappdata-myapp-3   nfs                     155m
+nfs-pv6   200M       RWO            Recycle          Bound    default/myappdata-myapp-4   nfs                     155m
+nfs-vp2   200M       RWO            Recycle          Bound    default/myappdata-myapp-0   nfs                     155m
+[root@master33 redis]# kubectl get pvc
+NAME                STATUS   VOLUME    CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+myappdata-myapp-0   Bound    nfs-vp2   200M       RWO            nfs            152m
+myappdata-myapp-1   Bound    nfs-pv3   200M       RWO            nfs            147m
+myappdata-myapp-2   Bound    nfs-pv4   200M       RWO            nfs            147m
+myappdata-myapp-3   Bound    nfs-pv5   200M       RWO            nfs            147m
+myappdata-myapp-4   Bound    nfs-pv6   200M       RWO            nfs            147m
+myappdata-myapp-5   Bound    nfs-pv1   200M       RWO            nfs            147m
+[root@master33 redis]# kubectl get pods
+NAME       READY   STATUS    RESTARTS   AGE
+myapp-0    1/1     Running   0          147m
+myapp-1    1/1     Running   0          147m
+myapp-2    1/1     Running   0          147m
+myapp-3    1/1     Running   0          147m
+myapp-4    1/1     Running   0          147m
+myapp-5    1/1     Running   0          147m
+
+
+nfs服务端已有数据
+[root@jbjbjb redis]# tree /k8s/redis/
+/k8s/redis/
+├── pv1
+│?? └── nodes.conf
+├── pv2
+│?? └── nodes.conf
+├── pv3
+│?? └── nodes.conf
+├── pv4
+│?? └── nodes.conf
+├── pv5
+│?? └── nodes.conf
+└── pv6
+    └── nodes.conf
+
+6 directories, 6 files
