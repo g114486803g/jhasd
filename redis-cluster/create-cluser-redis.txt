@@ -1,0 +1,181 @@
+redis-cli --cluster create 10.244.1.91:6379 10.244.2.91:6379  10.244.1.92:6379 10.244.2.92:6379 10.244.1.93:6379 10.244.2.93:6379 --cluster-replicas 1
+
+
+[root@master33 redis]# kubectl get pods
+NAME                         READY   STATUS    RESTARTS   AGE
+busybox1                     1/1     Running   0          51m
+curl-web                     1/1     Running   24         5d1h
+myapp-0                      1/1     Running   0          24m
+myapp-1                      1/1     Running   0          24m
+myapp-2                      1/1     Running   0          24m
+myapp-3                      1/1     Running   0          24m
+myapp-4                      1/1     Running   0          24m
+myapp-5                      1/1     Running   0          24m
+
+获取ip的方法1
+[root@master33 redis]# kubectl get po -o wide | grep myapp
+myapp-0                      1/1     Running   0          18m     10.244.1.91   node-34   <none>           <none>
+myapp-1                      1/1     Running   0          18m     10.244.2.91   node-35   <none>           <none>
+myapp-2                      1/1     Running   0          18m     10.244.1.92   node-34   <none>           <none>
+myapp-3                      1/1     Running   0          18m     10.244.2.92   node-35   <none>           <none>
+myapp-4                      1/1     Running   0          18m     10.244.1.93   node-34   <none>           <none>
+myapp-5                      1/1     Running   0          17m     10.244.2.93   node-35   <none>           <none>
+
+通过DNS方法2
+[root@master33 redis]# kubectl exec -it busybox1 -- nslookup myapp-sts 
+Server:    10.96.0.10
+Address 1: 10.96.0.10 kube-dns.kube-system.svc.cluster.local
+
+Name:      myapp-sts
+Address 1: 10.244.2.91 10-244-2-91.myapp-sts.default.svc.cluster.local
+Address 2: 10.244.1.92 10-244-1-92.myapp-sts.default.svc.cluster.local
+Address 3: 10.244.2.93 10-244-2-93.myapp-sts.default.svc.cluster.local
+Address 4: 10.244.1.91 10-244-1-91.myapp-sts.default.svc.cluster.local
+Address 5: 10.244.2.92 10-244-2-92.myapp-sts.default.svc.cluster.local
+Address 6: 10.244.1.93 10-244-1-93.myapp-sts.default.svc.cluster.local
+
+方法3
+[root@master33 redis]# kubectl exec -it busybox1 -- nslookup myapp-sts | tail -n 6 | for i in `awk '{print $4}'`; do echo $i; done
+10-244-1-92.myapp-sts.default.svc.cluster.local
+10-244-2-93.myapp-sts.default.svc.cluster.local
+10-244-2-91.myapp-sts.default.svc.cluster.local
+10-244-1-91.myapp-sts.default.svc.cluster.local
+10-244-2-92.myapp-sts.default.svc.cluster.local
+10-244-1-93.myapp-sts.default.svc.cluster.local
+
+
+
+进去容器创建集群
+#创建集群，--cluster-replicas 1指定从库数量1
+
+#创建顺序三个主，三个从，前面三个是主后面三个是从
+（如果配置了密码则加上密码信息：
+
+redis-cli -a passwordxxx --cluster create 10.244.1.91:6379 10.244.2.91:6379  10.244.1.92:6379 10.244.2.92:6379 10.244.
+1.93:6379 10.244.2.93:6379  --cluster-replicas 1
+
+[root@master33 redis]# kubectl exec -it myapp-0 -- sh
+/ # redis-cli --cluster create 10.244.1.91:6379 10.244.2.91:6379  10.244.1.92:6379 10.244.2.92:6379 10.244.
+1.93:6379 10.244.2.93:6379 --cluster-replicas 1
+>>> Performing hash slots allocation on 6 nodes...
+Master[0] -> Slots 0 - 5460
+Master[1] -> Slots 5461 - 10922
+Master[2] -> Slots 10923 - 16383
+Adding replica 10.244.1.93:6379 to 10.244.1.91:6379
+Adding replica 10.244.2.93:6379 to 10.244.2.91:6379
+Adding replica 10.244.2.92:6379 to 10.244.1.92:6379
+M: ce8c08d4dd983c149d8a1a76a78380b71eac5efe 10.244.1.91:6379
+   slots:[0-5460] (5461 slots) master
+M: 81cdc2c05450977952304f9e525625cb51faa135 10.244.2.91:6379
+   slots:[5461-10922] (5462 slots) master
+M: 34087c742d7b2afb0933f17ea7a45a01d2f5dd1b 10.244.1.92:6379
+   slots:[10923-16383] (5461 slots) master
+S: 1ba8c1ebf836b444aeb52190a7cdc50ce9ce9d62 10.244.2.92:6379
+   replicates 34087c742d7b2afb0933f17ea7a45a01d2f5dd1b
+S: 8d332a16cd904cb9c8c5190415243dc4d969916c 10.244.1.93:6379
+   replicates ce8c08d4dd983c149d8a1a76a78380b71eac5efe
+S: 00e87f3a61ccb1b46bbfa6197eb286debacf320a 10.244.2.93:6379
+   replicates 81cdc2c05450977952304f9e525625cb51faa135
+Can I set the above configuration? (type 'yes' to accept): yes
+>>> Nodes configuration updated
+>>> Assign a different config epoch to each node
+>>> Sending CLUSTER MEET messages to join the cluster
+Waiting for the cluster to join
+....
+>>> Performing Cluster Check (using node 10.244.1.91:6379)
+M: ce8c08d4dd983c149d8a1a76a78380b71eac5efe 10.244.1.91:6379
+   slots:[0-5460] (5461 slots) master
+   1 additional replica(s)
+M: 81cdc2c05450977952304f9e525625cb51faa135 10.244.2.91:6379
+   slots:[5461-10922] (5462 slots) master
+   1 additional replica(s)
+S: 8d332a16cd904cb9c8c5190415243dc4d969916c 10.244.1.93:6379
+   slots: (0 slots) slave
+   replicates ce8c08d4dd983c149d8a1a76a78380b71eac5efe
+S: 00e87f3a61ccb1b46bbfa6197eb286debacf320a 10.244.2.93:6379
+   slots: (0 slots) slave
+   replicates 81cdc2c05450977952304f9e525625cb51faa135
+S: 1ba8c1ebf836b444aeb52190a7cdc50ce9ce9d62 10.244.2.92:6379
+   slots: (0 slots) slave
+   replicates 34087c742d7b2afb0933f17ea7a45a01d2f5dd1b
+M: 34087c742d7b2afb0933f17ea7a45a01d2f5dd1b 10.244.1.92:6379
+   slots:[10923-16383] (5461 slots) master
+   1 additional replica(s)
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+
+查看信息
+/ # redis-cli cluster info
+cluster_state:ok
+cluster_slots_assigned:16384
+cluster_slots_ok:16384
+cluster_slots_pfail:0
+cluster_slots_fail:0
+cluster_known_nodes:6
+cluster_size:3
+cluster_current_epoch:6
+cluster_my_epoch:1
+cluster_stats_messages_ping_sent:73
+cluster_stats_messages_pong_sent:83
+cluster_stats_messages_sent:156
+cluster_stats_messages_ping_received:78
+cluster_stats_messages_pong_received:73
+cluster_stats_messages_meet_received:5
+cluster_stats_messages_received:156
+
+创建成功
+/ # redis-cli cluster nodes
+ce8c08d4dd983c149d8a1a76a78380b71eac5efe 10.244.1.91:6379@16379 myself,master - 0 1586274602000 1 connected 0-5460
+81cdc2c05450977952304f9e525625cb51faa135 10.244.2.91:6379@16379 master - 0 1586274605000 2 connected 5461-10922
+8d332a16cd904cb9c8c5190415243dc4d969916c 10.244.1.93:6379@16379 slave ce8c08d4dd983c149d8a1a76a78380b71eac5efe 0 1586274607037 5 connected
+00e87f3a61ccb1b46bbfa6197eb286debacf320a 10.244.2.93:6379@16379 slave 81cdc2c05450977952304f9e525625cb51faa135 0 1586274605018 6 connected
+1ba8c1ebf836b444aeb52190a7cdc50ce9ce9d62 10.244.2.92:6379@16379 slave 34087c742d7b2afb0933f17ea7a45a01d2f5dd1b 0 1586274604000 4 connected
+34087c742d7b2afb0933f17ea7a45a01d2f5dd1b 10.244.1.92:6379@16379 master - 0 1586274606027 3 connected 10923-16383
+/ # exit
+
+
+验证集主从
+[root@master33 redis]# for x in $(seq 0 5); do echo "myapp-$x"; kubectl exec myapp-$x -- redis-cli role; echo; done
+myapp-0
+master
+3080
+10.244.1.93
+6379
+3080
+
+myapp-1
+master
+3094
+10.244.2.93
+6379
+3080
+
+myapp-2
+master
+3137
+10.244.2.92
+6379
+3137
+
+myapp-3
+slave
+10.244.1.92
+6379
+connected
+3137
+
+myapp-4
+slave
+10.244.1.91
+6379
+connected
+3080
+
+myapp-5
+slave
+10.244.2.91
+6379
+connected
+3094
