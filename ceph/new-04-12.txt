@@ -1,0 +1,40 @@
+1.配置基于密钥ssh登录
+....省略了
+
+
+2.初始化RADOS集群
+ceph-deploy new --cluster-network 2.1.1.0/24  --public-network 2.1.1.0/24 ceph11 ceph12
+
+
+3.安装ceph集群节点
+ceph-deploy install node2 node3
+ ....省略了
+ 
+4.初始化MON节点
+ceph-deploy mon create-initial
+
+5.把配置文件和admin密钥拷贝Ceph集群各节点，以免得每次执行”ceph“命令行时不得不明确指定MON节点地址和ceph.client.admin.keyring：
+ceph-deploy admin ceph11 ceph12
+
+6.查看集群是否健康
+[root@ceph11 ceph]# ceph health
+HEALTH_OK
+[root@ceph11 ceph]# ceph -s
+  cluster:
+    id:     e3b8d2b3-dfee-4473-90ee-ab148df92894
+    health: HEALTH_OK
+ 
+  services:
+    mon: 2 daemons, quorum ceph11,ceph12
+    mgr: no daemons active
+    osd: 0 osds: 0 up, 0 in
+ 
+  data:
+    pools:   0 pools, 0 pgs
+    objects: 0 objects, 0B
+    usage:   0B used, 0B / 0B avail
+    pgs:     
+
+
+把磁盘加入集群
+ceph-deploy osd create --data /dev/sdb ceph11
