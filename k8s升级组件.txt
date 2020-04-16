@@ -108,3 +108,50 @@ Static pod: etcd-master13 hash: ddfd31b508aba15f508f36fd4fec8541
 [upgrade/staticpods] This might take a minute or longer depending on the component/version gap (timeout 5m0s)
 Static pod: kube-apiserver-master13 hash: b4f38e649021515234e7e29e77b878cb
 Static pod: kube-apiserver-master13 hash: b4f38e649021515234e7e29e77b878cb
+
+
+
+最后升级软件包
+
+
+
+
+将node2节点改为维护状态禁止调度
+[root@tests ~]# kubectl drain node2  --ignore-daemonsets
+node/node2 cordoned
+WARNING: ignoring DaemonSet-managed Pods: default/log-pilot-dnl77, kube-system/kube-flannel-ds-amd64-g9wtq, kube-system/kube-proxy-zxhtt
+evicting pod default/nginx-app-7f59f8b7bf-msvlw
+evicting pod default/test-s-deployment-75cf8667ff-cd9d4
+evicting pod default/test-s-deployment-75cf8667ff-wqx9z
+pod/test-s-deployment-75cf8667ff-cd9d4 evicted
+pod/test-s-deployment-75cf8667ff-wqx9z evicted
+pod/nginx-app-7f59f8b7bf-msvlw evicted
+node/node2 evicted
+
+　查看
+[root@tests ~]# kubectl get nodes
+NAME    STATUS                     ROLES    AGE   VERSION
+node1   Ready                      <none>   14d   v1.18.0
+node2   Ready,SchedulingDisabled   <none>   14d   v1.18.0
+tests   Ready                      master   14d   v1.18.0
+
+
+直接安装
+yum install -y kubelet kubeadm kubectl
+
+[root@k8s-master01 ~]# systemctl daemon-reload
+[root@k8s-master01 ~]# systemctl restart kubelet
+[root@k8s-master01 ~]# systemctl status kubelet 
+
+
+恢复集群
+[root@tests ~]#  kubectl uncordon node2
+node/node2 uncordoned
+[root@tests ~]# kubectl get node
+NAME    STATUS   ROLES    AGE   VERSION
+node1   Ready    <none>   14d   v1.18.0
+node2   Ready    <none>   14d   v1.18.1
+tests   Ready    master   14d   v1.18.0
+
+https://www.cnblogs.com/dukuan/p/10071204.html
+
