@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bbc-deployment
+  labels:
+    app: bbc
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: bbc
+  template:
+    metadata:
+      labels:
+        app: bbc
+    spec:
+      nodeName: node2   <<<---固定在node2节点上
+      containers:
+      - name: bbc
+        image: registry.cn-shenzhen.aliyuncs.com/jbjb/test:nginx-v01
+        ports:
+        - containerPort: 80
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: app1-bbc
+  
+spec:
+  type: ClusterIP
+  selector:
+    app: bbc
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+ 
