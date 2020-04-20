@@ -1,0 +1,80 @@
+ceph-deploy new ceph70 ceph71
+
+vim ceph.conf 
+添加两行
+osd_pool_default_size = 2
+
+public_network = 10.98.0.0/16
+
+---------------------------------
+
+ceph-deploy mon create-initial
+ceph-deploy admin  ceph70 ceph71
+
+----------
+[root@ceph70 ceph]# ceph osd pool create cephfs-data 128 128
+pool 'cephfs-data' created
+[root@ceph70 ceph]# ceph osd pool create cephfs-metadata 64 64
+pool 'cephfs-metadata' created
+[root@ceph70 ceph]# ceph fs new cephfs cephfs-metadata cephfs-data
+new fs with metadata pool 2 and data pool 1
+[root@ceph70 ceph]# ceph fs status cephfs
+cephfs - 0 clients
+======
++------+----------+--------+----------+-------+-------+
+| Rank |  State   |  MDS   | Activity |  dns  |  inos |
++------+----------+--------+----------+-------+-------+
+|  0   | creating | ceph70 |          |    0  |    0  |
++------+----------+--------+----------+-------+-------+
++-----------------+----------+-------+-------+
+|       Pool      |   type   |  used | avail |
++-----------------+----------+-------+-------+
+| cephfs-metadata | metadata |    0  | 2250M |
+|   cephfs-data   |   data   |    0  | 2250M |
++-----------------+----------+-------+-------+
++-------------+
+| Standby MDS |
++-------------+
++-------------+
+MDS version: ceph version 14.2.9 (581f22da52345dba46ee232b73b990f06029a2a0) nautilus (stable)
+[root@ceph70 ceph]# 
+
+
+在 Monitor 上, 创建一个用户，用于访问CephFs
+ceph auth get-or-create client.nfs mon 'allow r' mds 'allow rw' osd 'allow rw pool=cephfs-data, allow rw pool=cephfs-metadata' -o ceph.client.nfs.keyring
+
+验证key是否生效
+[root@ceph70 ceph]# ceph auth get client.nfs
+exported keyring for client.nfs
+[client.nfs]
+	key = AQAvUJ1eOkTeOhAAWVyRZkN1TKPY1KUCoIvWdQ==
+	caps mds = "allow rw"
+	caps mon = "allow r"
+	caps osd = "allow rw pool=cephfs-data, allow rw pool=cephfs-metadata"
+
+
+客户端挂载
+1、安装ceph-common
+```
+yum install -y ceph-common
+```
+2、安装ceph-fuse
+```
+yum install -y ceph-fuse
+```
+
+普通挂载
+mount -t ceph 10.98.2.70:6789,10.98.2.71:6789:/ /mnt/data/ -o name=nfs,secret=AQAvUJ1eOkTeOhAAWVyRZkN1TKPY1KUCoIvWdQ==
+
+
+
+内核挂载需要复制 ceph.client.nfs.keyring 过来
+ceph-fuse --keyring /etc/ceph/ceph.client.nfs.keyring --name client.nfs -m 10.98.2.70:6789,10.98.2.71:6789 /mnt/data/
+
+卸载
+fusermount -u /mnt/data/
+
+监控模板
+https://grafana.com/grafana/dashboards/2842
+
+----------
