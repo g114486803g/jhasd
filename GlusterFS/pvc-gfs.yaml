@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: gfs-gv1-pydir-pv
+  namespace: default
+  labels:
+    type: glusterfs
+spec:
+  storageClassName: gv1
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany
+  glusterfs:
+    endpoints: "gfs"
+    path: "fdisk-x"
+    readOnly: false
+    
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gfs-gv1-pydir-pvc
+  namespace: default
+spec:
+  storageClassName: gv1
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi

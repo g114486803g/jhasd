@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-s-deployment
+  namespace: default
+  labels:
+    app: test-s
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: test-s
+  template:
+    metadata:
+      labels:
+        app: test-s
+    spec:
+      nodeName: node-34
+      containers:
+      - name: test-s
+        image: registry.cn-shenzhen.aliyuncs.com/jbjb/test:nginx-v01
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: gfspydir
+            mountPath: /abc/data
+      volumes:
+        - name: gfspydir
+          persistentVolumeClaim:
+            claimName: gfs-gv1-pydir-pvc
+
+
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  type: NodePort
+  selector:
+    app: test-s
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30007
+    
+
+
