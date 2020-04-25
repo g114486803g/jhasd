@@ -1,0 +1,109 @@
+cat /etc/yum.repos.d/gfs.repo
+
+[myglusterfs]
+name=glusterfs
+baseurl=https://buildlogs.centos.org/centos/7/storage/x86_64/gluster-7
+enabled=1
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-mysql
+
+
+
+主节点为2.1.1.18
+所有节点添加
+mkdir /data/gfs1 -p
+mkdir /data/gfs2 -p
+
+所有节点启动
+systemctl start glusterd.service
+
+
+[root@gfs18 ~]# gluster peer probe  2.1.1.19
+peer probe: success. 
+[root@gfs18 ~]# gluster pool list
+UUID					Hostname 	State
+97153a40-aab0-44ea-b387-6008ff5082df	2.1.1.19 	Connected 
+34ed15c1-211d-4049-8a1f-245a75d09b61	localhost	Connected 
+
+
+因为不是挂载盘所以需要加force强制加入
+[root@gfs18 ~]# gluster volume create fdisk-x replica 2 2.1.1.18:/data/gfs1 2.1.1.18:/data/gfs2 2.1.1.19:/data/gfs1 2.1.1.19:/data/gfs2
+Replica 2 volumes are prone to split-brain. Use Arbiter or Replica 3 to avoid this. See: http://docs.gluster.org/en/latest/Administrator%20Guide/Split%20brain%20and%20ways%20to%20deal%20with%20it/.
+Do you still want to continue?
+ (y/n) y
+volume create: fdisk-x: failed: The brick 2.1.1.18:/data/gfs1 is being created in the root partition. It is recommended that you don't use the system's root partition for storage backend. Or use 'force' at the end of the command if you want to override this behavior.
+
+
+强制加入
+[root@gfs18 ~]# gluster volume create fdisk-x replica 2 2.1.1.18:/data/gfs1 2.1.1.18:/data/gfs2 2.1.1.19:/data/gfs1 2.1.1.19:/data/gfs2 force
+volume create: fdisk-x: success: please start the volume to access data
+
+[root@gfs18 ~]# gluster volume start fdisk-x 
+volume start: fdisk-x: success
+[root@gfs18 ~]# gluster volume info fdisk-x 
+ 
+Volume Name: fdisk-x
+Type: Distributed-Replicate
+Volume ID: 038310cb-7578-46c0-827d-f03ee6c70b94
+Status: Started
+Snapshot Count: 0
+Number of Bricks: 2 x 2 = 4
+Transport-type: tcp
+Bricks:
+Brick1: 2.1.1.18:/data/gfs1
+Brick2: 2.1.1.18:/data/gfs2
+Brick3: 2.1.1.19:/data/gfs1
+Brick4: 2.1.1.19:/data/gfs2
+Options Reconfigured:
+transport.address-family: inet
+storage.fips-mode-rchecksum: on
+nfs.disable: on
+performance.client-io-threads: off
+
+--------------------------------------------------
+客户端安装
+yum install -y glusterfs glusterfs-fuse
+
+本地挂载 +卷名字是集群的ip都可以挂载
+mount -t glusterfs 2.1.1.18:/fdisk-x /mnt/
+
+
+
+在线扩容添加2.1.1.20的ip 
+[root@gfs18 yum.repos.d]# gluster peer probe 2.1.1.20
+peer probe: success. 
+[root@gfs18 yum.repos.d]# gluster volume add-brick fdisk-x 2.1.1.20:/data/gfs1 2.1.1.20:/data/gfs2
+volume add-brick: success
+
+添加前
+[root@gfs19 mnt]# df -h
+文件系统           容量  已用  可用 已用% 挂载点
+devtmpfs           900M     0  900M    0% /dev
+tmpfs              910M     0  910M    0% /dev/shm
+tmpfs              910M  9.5M  901M    2% /run
+tmpfs              910M     0  910M    0% /sys/fs/cgroup
+/dev/sda3           27G  2.0G   26G    8% /
+/dev/sda1         1014M  141M  874M   14% /boot
+tmpfs              182M     0  182M    0% /run/user/0
+2.1.1.18:/fdisk-x   27G  2.3G   25G    9% /mnt
+
+
+添加后
+[root@gfs19 yum.repos.d]# df -h
+文件系统           容量  已用  可用 已用% 挂载点
+devtmpfs           900M     0  900M    0% /dev
+tmpfs              910M     0  910M    0% /dev/shm
+tmpfs              910M  9.5M  901M    2% /run
+tmpfs              910M     0  910M    0% /sys/fs/cgroup
+/dev/sda3           27G  2.0G   26G    8% /
+/dev/sda1         1014M  141M  874M   14% /boot
+tmpfs              182M     0  182M    0% /run/user/0
+2.1.1.19:/fdisk-x   30G  2.3G   28G    8% /mnt
+
+
+-----------2.1.1.20-----------------------------
+本来是6G 需要除以/2 所以上的只得3G
+[root@gfs20 ~]# df -h 
+文件系统        容量  已用  可用 已用% 挂载点
+
+/dev/sdb        6.0G   33M  6.0G    1% /data
