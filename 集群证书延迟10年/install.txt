@@ -1,0 +1,92 @@
+下载链接
+https://github.com/luckylucky421/kubernetes1.17.3/raw/master/update-kubeadm-cert.sh
+
+
+[root@master33 ~]# ./update-kubeadm-cert.sh all
+[2020-04-26T23:22:13.705829215+0800]: INFO: backup /etc/kubernetes to /etc/kubernetes.old-20200426
+Signature ok
+subject=/CN=etcd-server
+Getting CA Private Key
+[2020-04-26T23:22:13.942748904+0800]: INFO: generated /etc/kubernetes/pki/etcd/server.crt
+Signature ok
+subject=/CN=etcd-peer
+Getting CA Private Key
+[2020-04-26T23:22:13.975806790+0800]: INFO: generated /etc/kubernetes/pki/etcd/peer.crt
+Signature ok
+subject=/O=system:masters/CN=kube-etcd-healthcheck-client
+Getting CA Private Key
+[2020-04-26T23:22:14.012884511+0800]: INFO: generated /etc/kubernetes/pki/etcd/healthcheck-client.crt
+Signature ok
+subject=/O=system:masters/CN=kube-apiserver-etcd-client
+Getting CA Private Key
+[2020-04-26T23:22:14.033826885+0800]: INFO: generated /etc/kubernetes/pki/apiserver-etcd-client.crt
+bd99946d1202
+[2020-04-26T23:22:16.896199230+0800]: INFO: restarted etcd
+Signature ok
+subject=/CN=kube-apiserver
+Getting CA Private Key
+[2020-04-26T23:22:16.969893308+0800]: INFO: generated /etc/kubernetes/pki/apiserver.crt
+Signature ok
+subject=/O=system:masters/CN=kube-apiserver-kubelet-client
+Getting CA Private Key
+[2020-04-26T23:22:17.252160291+0800]: INFO: generated /etc/kubernetes/pki/apiserver-kubelet-client.crt
+Signature ok
+subject=/CN=system:kube-controller-manager
+Getting CA Private Key
+[2020-04-26T23:22:17.760370143+0800]: INFO: generated /etc/kubernetes/controller-manager.crt
+[2020-04-26T23:22:17.774290637+0800]: INFO: generated new /etc/kubernetes/controller-manager.conf
+Signature ok
+subject=/CN=system:kube-scheduler
+Getting CA Private Key
+[2020-04-26T23:22:17.988601696+0800]: INFO: generated /etc/kubernetes/scheduler.crt
+[2020-04-26T23:22:18.027760952+0800]: INFO: generated new /etc/kubernetes/scheduler.conf
+Signature ok
+subject=/O=system:masters/CN=kubernetes-admin
+Getting CA Private Key
+[2020-04-26T23:22:18.328540803+0800]: INFO: generated /etc/kubernetes/admin.crt
+[2020-04-26T23:22:18.347542974+0800]: INFO: generated new /etc/kubernetes/admin.conf
+[2020-04-26T23:22:18.934328653+0800]: INFO: copy the admin.conf to ~/.kube/config for kubectl
+[2020-04-26T23:22:18.976725537+0800]: WARNING: does not need to update kubelet.conf
+Signature ok
+subject=/CN=front-proxy-client
+Getting CA Private Key
+[2020-04-26T23:22:19.093513070+0800]: INFO: generated /etc/kubernetes/pki/front-proxy-client.crt
+e5618a81d06e
+[2020-04-26T23:22:19.579788192+0800]: INFO: restarted kube-apiserver
+e8b663a159b8
+[2020-04-26T23:22:19.930876721+0800]: INFO: restarted kube-controller-manager
+037646f472b6
+[2020-04-26T23:22:20.404464155+0800]: INFO: restarted kube-scheduler
+[2020-04-26T23:22:20.780604872+0800]: INFO: restarted kubelet
+[root@master33 ~]# kubectl  get pods -n kube-system
+NAME                               READY   STATUS    RESTARTS   AGE
+coredns-7ff77c879f-f8f5t           1/1     Running   11         20d
+coredns-7ff77c879f-nzmgp           1/1     Running   8          18d
+etcd-master33                      1/1     Running   24         30d
+fluentd-elasticsearch-fshg6        1/1     Running   14         21d
+fluentd-elasticsearch-nwxk6        1/1     Running   0          21d
+fluentd-elasticsearch-zgm5v        1/1     Running   0          21d
+kube-apiserver-master33            1/1     Running   6          9d
+kube-controller-manager-master33   1/1     Running   14         9d
+kube-flannel-ds-amd64-gjtfz        1/1     Running   36         30d
+kube-flannel-ds-amd64-rzl7b        1/1     Running   0          30d
+kube-flannel-ds-amd64-zm9tf        1/1     Running   0          30d
+kube-proxy-8l299                   1/1     Running   0          9d
+kube-proxy-hbfkh                   1/1     Running   6          9d
+kube-proxy-tcdf4                   1/1     Running   0          9d
+kube-scheduler-master33            1/1     Running   13         9d
+[root@master33 ~]# 
+[root@master33 ~]# openssl x509 -in /etc/kubernetes/pki/ca.crt -noout -text  |grep Not
+            Not Before: Mar 27 14:50:59 2020 GMT
+            Not After : Mar 25 14:50:59 2030 GMT
+[root@master33 ~]# 
+[root@master33 ~]# openssl x509 -in /etc/kubernetes/pki/apiserver.crt -noout -text  |grep Not
+            Not Before: Apr 26 15:22:16 2020 GMT
+            Not After : Apr 24 15:22:16 2030 GMT
+[root@master33 ~]# 
+[root@master33 ~]# openssl x509 -in /etc/kubernetes/pki/apiserver-etcd-client.crt  -noout -text  |grep Not
+            Not Before: Apr 26 15:22:14 2020 GMT
+            Not After : Apr 24 15:22:14 2030 GMT
+
+参考链接
+https://github.com/luckylucky421/kubernetes1.17.3
