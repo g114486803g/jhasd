@@ -56,10 +56,9 @@ lsmod | grep ip_vs
 clear 
 echo "-----------我的淫荡的分割线-------------------------"
 echo "开始安装二进制包请稍后"
-yum makecache fast
+yum makecache fast -y
 
-yum install -y kubelet kubeadm kubectl
-yum install -y docker-ce docker-ce-cli containerd.io
+yum install -y kubelet kubeadm kubectl && yum install -y docker-ce docker-ce-cli containerd.io
 
 systemctl enable kubelet docker 
 systemctl start docker 
