@@ -1,0 +1,20 @@
+
+https://www.cnblogs.com/effortsing/p/10496547.html
+
+1、先删除pod
+
+2、再删除对应的deployment
+
+否则只是删除pod是不管用的，还会看到pod，因为deployment.yaml文件中定义了副本数量
+
+[root@VM_8_34_centos verify-web]# kubectl get deployments verify-web-test -n test-ops 
+NAME              READY   UP-TO-DATE   AVAILABLE   AGE
+verify-web-test   1/1     1            1           23s
+
+删除deployment
+
+[root@VM_8_34_centos verify-web]# kubectl delete deployments verify-web-test -n test-ops 
+deployment.apps "verify-web-test" deleted
+
+
+
