@@ -1,1 +1,50 @@
-sad
+#jaeger部署
+
+docker run -d --name jaeger -e COLLECTOR_ZIPKIN_HTTP_PORT=9411 -p 5775:5775/udp -p 6831:6831/udp  -p 6832:6832/udp  -p 5778:5778  -p 16686:16686 -p 14268:14268 -p 9411:9411 jaegertracing/all-in-one:1.6
+
+浏览器访问16686端口即可
+
+#etcd部署
+docker pull registry.cn-shenzhen.aliyuncs.com/jbjb/test:etcd-3.4.7
+docker tag registry.cn-shenzhen.aliyuncs.com/jbjb/test:etcd-3.4.7 etcd:v3.4.7
+docker rmi registry.cn-shenzhen.aliyuncs.com/jbjb/test:etcd-3.4.7 
+mkdir/data1/etcd/data
+
+docker run -d \
+  -p 2379:2379 \
+  -p 2380:2380 \
+  -v /data1/etcd/data:/etcd-data/member \
+  --name etcd \
+   etcd:v3.4.7 \
+  /usr/local/bin/etcd \
+  --name s1 \
+  --data-dir /etcd-data \
+  --listen-client-urls http://0.0.0.0:2379 \
+  --advertise-client-urls http://0.0.0.0:2379 \
+  --listen-peer-urls http://0.0.0.0:2380 \
+  --initial-advertise-peer-urls http://0.0.0.0:2380 \
+  --initial-cluster s1=http://0.0.0.0:2380 \
+  --initial-cluster-token tkn \
+  --initial-cluster-state new \
+  --log-level info \
+  --logger zap \
+  --log-outputs stderr
+
+
+
+本机测试
+ docker exec etcd /bin/sh -c "/usr/local/bin/etcd --version"
+ docker exec etcd /bin/sh -c "/usr/local/bin/etcdctl put foo bar"
+ docker exec etcd /bin/sh -c "/usr/local/bin/etcdctl get foo "
+
+
+etcdctl --endpoints=http://10.22.8.13:2379 put jsj bar11111
+
+etcdctl --endpoints=http://10.22.8.13:2379 get jsj
+
+
+远程测试
+docker exec etcd /bin/sh -c "etcdctl --endpoints=http://10.22.8.13:2379 put jsj bar11111"
+
+docker exec etcd /bin/sh -c "etcdctl --endpoints=http://10.22.8.13:2379 get jsj"
+
