@@ -1,0 +1,25 @@
+1.普通分流+kiali
+创建pods  test-v1.yaml test-v2.yaml
+kubectl apply -f test-v1.yaml
+kubectl apply -f test-v2.yaml
+kubectl apply -f svc-all.yaml
+2.创建virtual-service
+kubectl apply -f virtual-service-hpa.yaml
+
+----------------------------------
+
+2.分流+kiali
+##VirtualService+DestinationRule
+运行一个v1版本
+1. kubectl apply -f virt+rule.yaml 
+
+切换到v2版本
+2. kubectl apply -f virt-v2.yaml
+
+
+3.切回版本v1 
+ kubectl apply -f virt+rule.yaml
+
+
+----------------------
+
