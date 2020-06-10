@@ -1,0 +1,11 @@
+https://www.jianshu.com/p/4ebf960b2075
+pvcreate --dataalignment 128K /dev/sdb
+vgcreate --physicalextentsize 128K gfs_vg /dev/sdb
+lvcreate -L 2G --name gfs_pool_meta gfs_vg
+lvcreate -L 2G  --name gfs_pool gfs_vg
+lvconvert --chunksize 1280K --thinpool gfs_vg/gfs_pool  --poolmetadata gfs_vg/gfs_pool_meta
+lvchange --zero n gfs_vg/gfs_pool
+lvcreate -V 2G -T gfs_vg/gfs_pool -n gfs_lv
+mkfs.xfs -f -i size=512 -n size=8192 -d su=128k,sw=10 /dev/mapper/gfs_vg-gfs_lv 
+mkdir /mountpoint/
+mount /dev/mapper/gfs_vg-gfs_lv /mountpoint/
