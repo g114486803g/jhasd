@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: http-v1
+  labels:
+    server: http-v1
+    app: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      server: http-v1
+      app: web
+  template:
+    metadata:
+      name: http-v1
+      labels:
+        server: http-v1
+        app: web
+    spec:
+      containers:
+      - name: http-v1
+        image: registry.cn-shenzhen.aliyuncs.com/jbjb/test:nginx-v01 
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: storage001
+            mountPath: "/abc/data"
+      volumes:
+      - name: storage001
+        persistentVolumeClaim:
+          claimName: glusterfs-pvc
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: http-v1
+spec:
+  type: NodePort
+  selector:
+    server: http-v1
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    protocol: TCP
+    nodePort: 30090
+
