@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloud-auth
+spec:
+  ports:
+    - name: cloud-auth
+      port: 80
+  selector:
+    app: cloud-auth
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloud-auth
+  template:
+    metadata:
+      labels:
+        app: cloud-auth
+    spec:
+      containers:
+        - name: cloud-auth
+          image: test:v02
+          ports:
+            - name: http
+              containerPort: 80
+          #imagePullPolicy: Always
+          env:
+            # 1、stdout为约定关键字，表示采集标准输出日志
+            # 2、配置标准输出日志采集到ES的catalina索引下
+            - name: aliyun_logs_catalina
+              value: "stdout"
+            # 1、配置采集容器内文件日志，支持通配符
+            # 2、配置该日志采集到ES的access索引下
+            - name: aliyun_logs_access
+              value: "/var/log/nginx/*.log"
+          # 容器内文件日志路径需要配置emptyDir
+          volumeMounts:
+            - name: cloud-auth-log
+              mountPath: /var/log/nginx/ 
+      volumes:
+        - name: cloud-auth-log
+          emptyDir: {}
