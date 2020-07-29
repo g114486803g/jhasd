@@ -1,0 +1,4 @@
+[root@build32-8 monit]# kubectl get pods -n kube-system | grep kube-state
+kube-state-metrics-5d5bc95c7b-wdvjc   1/1     Running   0          14m
+[root@build32-8 monit]# kubectl get svc -n kube-system | grep kube-state
+kube-state-metrics    NodePort    172.16.255.222   <none>        8080:30272/TCP   14m
