@@ -1,6 +1,8 @@
 #!/bin/bash
 
-rpm -Uvh http://mirror.rc.usf.edu/compute_lock/elrepo/kernel/el7/x86_64/RPMS/elrepo-release-7.0-4.el7.elrepo.noarch.rpm 
+wget https://mirror.rc.usf.edu/elrepo/kernel/el7/x86_64/RPMS/elrepo-release-7.0-5.el7.elrepo.noarch.rpm --no-check-certificate
+
+rpm -ivh elrepo-release-7.0-5.el7.elrepo.noarch.rpm 
 yum clean all
 
 [root@ui186 ~]# yum --disablerepo="*" --enablerepo="elrepo-kernel" list available
